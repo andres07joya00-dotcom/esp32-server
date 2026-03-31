@@ -7,15 +7,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔹 Servir HTML
+//Servir HTML
 app.use(express.static(path.join(__dirname, "public")));
 
-// 🔹 MQTT
+//MQTT
 const client = mqtt.connect("mqtt://broker.hivemq.com");
+
+let ultimaLectura = 0;
 
 let humedad = 0;
 
-// 🔥 Estados de dispositivos
+// Estados de dispositivos
 let estados = {
   bomba: false,
   ventilador: false,
@@ -30,11 +32,12 @@ client.on("connect", () => {
 client.on("message", (topic, message) => {
   if (topic === "esp32/humedad") {
     humedad = message.toString();
+    ultimaLectura = Date.now(); 
     console.log("Humedad:", humedad);
   }
 });
 
-// 🔹 Enviar datos al HTML
+//Enviar datos al HTML
 app.get("/datos", (req, res) => {
   res.json({
     suelo: humedad,
@@ -44,37 +47,40 @@ app.get("/datos", (req, res) => {
   });
 });
 
-// 🔥 FUNCIÓN TOGGLE
+// FUNCIÓN TOGGLE
 function toggle(dispositivo) {
   estados[dispositivo] = !estados[dispositivo];
   return estados[dispositivo] ? "ON" : "OFF";
 }
 
-// 🔹 BOMBA (toggle)
+//BOMBA (toggle)
 app.post("/bomba", (req, res) => {
   const estado = toggle("bomba");
   client.publish("esp32/bomba", estado);
   res.json({ estado });
 });
 
-// 🔹 VENTILADOR (toggle)
+//VENTILADOR (toggle)
 app.post("/ventilador", (req, res) => {
   const estado = toggle("ventilador");
   client.publish("esp32/ventilador", estado);
   res.json({ estado });
 });
 
-// 🔹 LUCES (toggle)
+// LUCES (toggle)
 app.post("/luces", (req, res) => {
   const estado = toggle("luces");
   client.publish("esp32/luces", estado);
   res.json({ estado });
 });
 
-// 🔥 ESTADO DEL SERVIDOR + DISPOSITIVOS
+//ESTADO DEL SERVIDOR + DISPOSITIVOS
 app.get("/estado", (req, res) => {
+  let ahora = Date.now();
+  let conectadoESP32 = (ahora - ultimaLectura) < 10000; // 10 segundos
+
   res.json({
-    conectado: client.connected,
+    esp32: conectadoESP32,
     dispositivos: estados
   });
 });
