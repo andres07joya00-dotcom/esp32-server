@@ -12,7 +12,16 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "mqtt": "^5.15.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andres07joya00-dotcom/esp32-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/andres07joya00-dotcom/esp32-server/issues"
+  },
+  "homepage": "https://github.com/andres07joya00-dotcom/esp32-server#readme"
 }
