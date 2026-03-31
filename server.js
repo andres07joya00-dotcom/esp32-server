@@ -15,6 +15,13 @@ const client = mqtt.connect("mqtt://broker.hivemq.com");
 
 let humedad = 0;
 
+// 🔥 Estados de dispositivos
+let estados = {
+  bomba: false,
+  ventilador: false,
+  luces: false
+};
+
 client.on("connect", () => {
   console.log("Conectado a MQTT");
   client.subscribe("esp32/humedad");
@@ -37,20 +44,39 @@ app.get("/datos", (req, res) => {
   });
 });
 
-// 🔹 Controlar dispositivos
+// 🔥 FUNCIÓN TOGGLE
+function toggle(dispositivo) {
+  estados[dispositivo] = !estados[dispositivo];
+  return estados[dispositivo] ? "ON" : "OFF";
+}
+
+// 🔹 BOMBA (toggle)
 app.post("/bomba", (req, res) => {
-  client.publish("esp32/bomba", "ON");
-  res.send("Bomba ON");
+  const estado = toggle("bomba");
+  client.publish("esp32/bomba", estado);
+  res.json({ estado });
 });
 
+// 🔹 VENTILADOR (toggle)
 app.post("/ventilador", (req, res) => {
-  client.publish("esp32/ventilador", "ON");
-  res.send("Ventilador ON");
+  const estado = toggle("ventilador");
+  client.publish("esp32/ventilador", estado);
+  res.json({ estado });
 });
 
+// 🔹 LUCES (toggle)
 app.post("/luces", (req, res) => {
-  client.publish("esp32/luces", "ON");
-  res.send("Luces ON");
+  const estado = toggle("luces");
+  client.publish("esp32/luces", estado);
+  res.json({ estado });
+});
+
+// 🔥 ESTADO DEL SERVIDOR + DISPOSITIVOS
+app.get("/estado", (req, res) => {
+  res.json({
+    conectado: client.connected,
+    dispositivos: estados
+  });
 });
 
 app.listen(3000, () => {
