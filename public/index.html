@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PIPE</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(to right, #d9e8a1, #a8d5ba);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.titulo {
+  font-size: 40px;
+  margin: 20px;
+}
+
+.imagen {
+  width: 200px;
+  height: 120px;
+  border: 2px dashed black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fecha {
+  margin: 10px;
+}
+
+.contenedor {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.card {
+  background: #eee;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.botones {
+  position: fixed;
+  bottom: 30px;
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 15px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+</style>
+
+</head>
+<body>
+
+<div class="titulo">nombre</div>
+
+<div class="imagen">Imagen</div>
+
+<div class="fecha" id="fecha"></div>
+
+<div class="contenedor">
+  <div class="card">🌱 Suelo: <span id="suelo">--</span>%</div>
+  <div class="card">💡 Luz: <span id="luz">--</span>%</div>
+  <div class="card">💧 Aire: <span id="aire">--</span>%</div>
+  <div class="card">🌡️ Temp: <span id="temp">--</span>°C</div>
+</div>
+
+<div class="botones">
+  <button onclick="bomba()">Bomba</button>
+  <button onclick="ventilador()">Ventilador</button>
+  <button onclick="luces()">Luces</button>
+</div>
+
+<script>
+// 🔹 Fecha
+setInterval(() => {
+  document.getElementById("fecha").innerText =
+    new Date().toLocaleString();
+}, 1000);
+
+// 🔹 Obtener datos del servidor
+setInterval(() => {
+  fetch("/datos")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("suelo").innerText = data.suelo;
+      document.getElementById("aire").innerText = data.aire;
+      document.getElementById("temp").innerText = data.temp;
+      document.getElementById("luz").innerText = data.luz;
+    });
+}, 2000);
+
+// 🔹 Botones
+function bomba() {
+  fetch("/bomba", { method: "POST" });
+}
+
+function ventilador() {
+  fetch("/ventilador", { method: "POST" });
+}
+
+function luces() {
+  fetch("/luces", { method: "POST" });
+}
+</script>
+
+</body>
+</html>
