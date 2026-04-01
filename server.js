@@ -7,15 +7,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//Servir HTML
+// Servir HTML
 app.use(express.static(path.join(__dirname, "public")));
 
-//MQTT
+// MQTT
 const client = mqtt.connect("mqtt://broker.hivemq.com");
 
 let ultimaLectura = 0;
 
-let humedad = 0;
+// 🔥 VARIABLES NUEVAS
+let humedadSuelo = 0;
+let humedadAire = 0;
+let temperatura = 0;
 
 // Estados de dispositivos
 let estados = {
@@ -26,23 +29,40 @@ let estados = {
 
 client.on("connect", () => {
   console.log("Conectado a MQTT");
-  client.subscribe("esp32/humedad");
+
+  // 🔥 SUSCRIPCIONES
+  client.subscribe("esp32/humedad_suelo");
+  client.subscribe("esp32/humedad_amb");
+  client.subscribe("esp32/temperatura");
 });
 
+// 🔥 RECEPCIÓN DE DATOS
 client.on("message", (topic, message) => {
-  if (topic === "esp32/humedad") {
-    humedad = message.toString();
-    ultimaLectura = Date.now(); 
-    console.log("Humedad:", humedad);
+  const data = message.toString();
+
+  if (topic === "esp32/humedad_suelo") {
+    humedadSuelo = data;
+    ultimaLectura = Date.now();
+    console.log("Suelo:", humedadSuelo);
+  }
+
+  if (topic === "esp32/humedad_amb") {
+    humedadAire = data;
+    console.log("Aire:", humedadAire);
+  }
+
+  if (topic === "esp32/temperatura") {
+    temperatura = data;
+    console.log("Temp:", temperatura);
   }
 });
 
-//Enviar datos al HTML
+// 🔥 DATOS PARA EL FRONTEND
 app.get("/datos", (req, res) => {
   res.json({
-    suelo: humedad,
-    aire: "--",
-    temp: "--",
+    suelo: humedadSuelo,
+    aire: humedadAire,
+    temp: temperatura,
     luz: "--"
   });
 });
@@ -53,31 +73,31 @@ function toggle(dispositivo) {
   return estados[dispositivo] ? "ON" : "OFF";
 }
 
-//BOMBA (toggle)
+// BOMBA
 app.post("/bomba", (req, res) => {
   const estado = toggle("bomba");
   client.publish("esp32/bomba", estado);
   res.json({ estado });
 });
 
-//VENTILADOR (toggle)
+// VENTILADOR
 app.post("/ventilador", (req, res) => {
   const estado = toggle("ventilador");
   client.publish("esp32/ventilador", estado);
   res.json({ estado });
 });
 
-// LUCES (toggle)
+// LUCES
 app.post("/luces", (req, res) => {
   const estado = toggle("luces");
   client.publish("esp32/luces", estado);
   res.json({ estado });
 });
 
-//ESTADO DEL SERVIDOR + DISPOSITIVOS
+// ESTADO GENERAL
 app.get("/estado", (req, res) => {
   let ahora = Date.now();
-  let conectadoESP32 = (ahora - ultimaLectura) < 10000; // 10 segundos
+  let conectadoESP32 = (ahora - ultimaLectura) < 10000;
 
   res.json({
     esp32: conectadoESP32,
