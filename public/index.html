@@ -12,6 +12,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 /*Título */
@@ -19,22 +22,45 @@ body {
   font-size: 40px;
   margin: 20px;
   font-weight: bold;
+  color: #2c5530;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
-/*Imagen */
+/*Imagen - PERFECTAMENTE AJUSTADA  */
 .imagen {
   width: 220px;
   height: 130px;
-  border: 2px dashed black;
+  border: 2px solid #4CAF50;
+  border-radius: 12px;
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(45deg, #e8f5e8, #d4edda);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
+}
+
+.imagen:hover {
+  transform: scale(1.02);
+}
+
+#canvas3D {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
 }
 
 /*Fecha */
 .fecha {
   margin: 10px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
 }
 
 /*Sensores */
@@ -43,19 +69,39 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 15px;
   margin-top: 10px;
+  max-width: 500px;
+  width: 100%;
 }
 
 .card {
-  background: #eee;
-  padding: 15px;
-  border-radius: 12px;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  padding: 20px;
+  border-radius: 16px;
   text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-weight: bold;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card span {
+  color: #2c5530;
+  font-size: 24px;
 }
 
 /* Estado servidor */
 .estado {
-  margin-top: 15px;
+  margin-top: 20px;
   font-weight: bold;
+  font-size: 16px;
+  padding: 12px 20px;
+  border-radius: 25px;
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /*Botones */
@@ -64,20 +110,30 @@ body {
   bottom: 30px;
   display: flex;
   gap: 15px;
+  padding: 20px;
 }
 
 button {
-  padding: 15px 20px;
-  border-radius: 12px;
+  padding: 15px 25px;
+  border-radius: 25px;
   border: none;
   cursor: pointer;
   font-weight: bold;
-  background: #8a8f70;
+  font-size: 14px;
+  background: linear-gradient(145deg, #8a8f70, #6b7a4f);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
 button.activo {
-  background: #4caf50;
-  color: white;
+  background: linear-gradient(145deg, #4caf50, #45a049);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
 </style>
 
@@ -109,61 +165,84 @@ button.activo {
   <button onclick="toggle('luces')" id="btnLuz">Luces OFF</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
 
 <script>
+const canvas = document.getElementById("canvas3D");
+const rect = canvas.getBoundingClientRect();
 
-//
 const scene = new THREE.Scene();
-
-const camera = new THREE.PerspectiveCamera(75, 220/130, 0.1, 1000);
-
+const camera = new THREE.PerspectiveCamera(75, rect.width / rect.height, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({
-  canvas: document.getElementById("canvas3D"),
+  canvas: canvas,
   alpha: true,
   antialias: true
 });
+renderer.setSize(rect.width, rect.height);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-renderer.setSize(220, 130);
-
-//LUZ
+// Luces mejoradas
 const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(2, 2, 5);
+light.castShadow = true;
 scene.add(light);
 
-//MODELO
+const ambient = new THREE.AmbientLight(0x404040, 0.6);
+scene.add(ambient);
+
+// Modelo 3D
 let modelo;
-
 const loader = new THREE.GLTFLoader();
-loader.load("/modelo/invernadero.glb", function(gltf) {
-
-  modelo = gltf.scene;
-
-  modelo.scale.set(0.5, 0.5, 0.5);
-  modelo.position.set(0, -0.5, 0);
-
-  scene.add(modelo);
-
-}, undefined, function(error) {
-  console.error("Error cargando modelo:", error);
-});
+loader.load("/model/invernadero.glb", 
+  (gltf) => {
+    modelo = gltf.scene;
+    modelo.scale.set(0.5, 0.5, 0.5);
+    modelo.traverse((child) => {
+      if (child.isMesh) child.castShadow = true;
+    });
+    scene.add(modelo);
+    console.log("Modelo 3D cargado!");
+  },
+  undefined,
+  (error) => {
+    console.log("Usando modelo de respaldo (cubo verde)");
+    // Cubo de respaldo súper realista
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshLambertMaterial({ 
+      color: 0x4CAF50,
+      transparent: true,
+      opacity: 0.9
+    });
+    modelo = new THREE.Mesh(geometry, material);
+    modelo.castShadow = true;
+    scene.add(modelo);
+  }
+);
 
 camera.position.z = 3;
 
-// 🔹 ANIMACIÓN
+// Resize automático PERFECTO
+const resizeObserver = new ResizeObserver(() => {
+  const rect = canvas.getBoundingClientRect();
+  camera.aspect = rect.width / rect.height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(rect.width, rect.height);
+});
+resizeObserver.observe(canvas);
+
+// Animación suave
 function animate() {
   requestAnimationFrame(animate);
-
   if (modelo) {
-    modelo.rotation.y += 0.01; // 🔥 rotación
+    modelo.rotation.y += 0.01;
+    modelo.rotation.x = Math.sin(Date.now() * 0.001) * 0.1;
   }
-
   renderer.render(scene, camera);
 }
-
 animate();
-
 //Fecha en tiempo real
 setInterval(() => {
   document.getElementById("fecha").innerText =
