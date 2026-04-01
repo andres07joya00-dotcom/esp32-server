@@ -15,10 +15,11 @@ const client = mqtt.connect("mqtt://broker.hivemq.com");
 
 let ultimaLectura = 0;
 
-// 🔥 VARIABLES NUEVAS
-let humedadSuelo = 0;
-let humedadAire = 0;
-let temperatura = 0;
+//VARIABLES
+let humedadSuelo = "--";
+let humedadAire = "--";
+let temperatura = "--";
+let luz = "--"; //NUEVO
 
 // Estados de dispositivos
 let estados = {
@@ -30,13 +31,14 @@ let estados = {
 client.on("connect", () => {
   console.log("Conectado a MQTT");
 
-  // 🔥 SUSCRIPCIONES
+  //SUSCRIPCIONES
   client.subscribe("esp32/humedad_suelo");
   client.subscribe("esp32/humedad_amb");
   client.subscribe("esp32/temperatura");
+  client.subscribe("esp32/luz"); 
 });
 
-// 🔥 RECEPCIÓN DE DATOS
+//RECEPCIÓN DE DATOS
 client.on("message", (topic, message) => {
   const data = message.toString();
 
@@ -55,19 +57,24 @@ client.on("message", (topic, message) => {
     temperatura = data;
     console.log("Temp:", temperatura);
   }
+
+  if (topic === "esp32/luz") {
+    luz = data;
+    console.log("Luz:", luz);
+  }
 });
 
-// 🔥 DATOS PARA EL FRONTEND
+//DATOS PARA EL FRONTEND
 app.get("/datos", (req, res) => {
   res.json({
     suelo: humedadSuelo,
     aire: humedadAire,
     temp: temperatura,
-    luz: "--"
+    luz: luz 
   });
 });
 
-// FUNCIÓN TOGGLE
+//FUNCIÓN TOGGLE
 function toggle(dispositivo) {
   estados[dispositivo] = !estados[dispositivo];
   return estados[dispositivo] ? "ON" : "OFF";
