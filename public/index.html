@@ -86,7 +86,9 @@ button.activo {
 
 <div class="titulo">PERROS HPTAS</div>
 
-<div class="imagen">Imagen</div>
+<div class="imagen">
+  <canvas id="canvas3D"></canvas>
+</div>
 
 <div class="fecha" id="fecha"></div>
 
@@ -107,7 +109,60 @@ button.activo {
   <button onclick="toggle('luces')" id="btnLuz">Luces OFF</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+
 <script>
+
+//
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(75, 220/130, 0.1, 1000);
+
+const renderer = new THREE.WebGLRenderer({
+  canvas: document.getElementById("canvas3D"),
+  alpha: true,
+  antialias: true
+});
+
+renderer.setSize(220, 130);
+
+//LUZ
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(2, 2, 5);
+scene.add(light);
+
+//MODELO
+let modelo;
+
+const loader = new THREE.GLTFLoader();
+loader.load("/modelo/invernadero.glb", function(gltf) {
+
+  modelo = gltf.scene;
+
+  modelo.scale.set(0.5, 0.5, 0.5);
+  modelo.position.set(0, -0.5, 0);
+
+  scene.add(modelo);
+
+}, undefined, function(error) {
+  console.error("Error cargando modelo:", error);
+});
+
+camera.position.z = 3;
+
+// 🔹 ANIMACIÓN
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (modelo) {
+    modelo.rotation.y += 0.01; // 🔥 rotación
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate();
 
 //Fecha en tiempo real
 setInterval(() => {
