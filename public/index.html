@@ -17,7 +17,6 @@ body {
   box-sizing: border-box;
 }
 
-/*Título */
 .titulo {
   font-size: 40px;
   margin: 20px;
@@ -26,7 +25,6 @@ body {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
 }
 
-/*Imagen - PERFECTAMENTE AJUSTADA  */
 .imagen {
   width: 220px;
   height: 130px;
@@ -89,11 +87,27 @@ body {
 }
 
 .card span {
+  display: inline; 
   color: #2c5530;
   font-size: 24px;
 }
 
-/* Estado servidor */
+/* 🔴 ERROR VISUAL */
+.card.desconectado {
+  background: linear-gradient(145deg, #ffebee, #ffcdd2);
+  border: 2px solid #f44336;
+  animation: pulsoRojo 2s infinite;
+}
+
+.card.desconectado span {
+  color: red;
+}
+
+@keyframes pulsoRojo {
+  0%,100% { box-shadow: 0 0 15px rgba(244,67,54,0.3); }
+  50% { box-shadow: 0 0 25px rgba(244,67,54,0.6); }
+}
+
 .estado {
   margin-top: 20px;
   font-weight: bold;
@@ -102,12 +116,23 @@ body {
   border-radius: 25px;
   background: rgba(255,255,255,0.8);
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  top: -5px;
+  transform: translateX(59%);
+
 }
 
-/*Botones */
+.estado.desconectado {
+  background: #ffcdd2;
+  animation: pulsoRojo 2s infinite;
+}
+
 .botones {
   position: fixed;
-  bottom: 30px;
+  bottom: 15px;
   display: flex;
   gap: 15px;
   padding: 20px;
@@ -140,7 +165,7 @@ button.activo {
 </head>
 <body>
 
-<div class="titulo">PERROS HPTAS</div>
+<div class="titulo">INVERNADERO</div>
 
 <div class="imagen">
   <canvas id="canvas3D"></canvas>
@@ -149,15 +174,20 @@ button.activo {
 <div class="fecha" id="fecha"></div>
 
 <div class="contenedor">
-  <div class="card">🌱 Suelo: <span id="suelo">--</span>%</div>
-  <div class="card">💡 Luz: <span id="luz">--</span>%</div>
-  <div class="card">💧 Aire: <span id="aire">--</span>%</div>
-  <div class="card">🌡️ Temp: <span id="temp">--</span>°C</div>
-</div>
+  <div class="card" id="cardSuelo">
+    🌱 Suelo: <span id="suelo">--</span> %
+  </div>
+  <div class="card" id="cardLuz">
+    💡 Luz: <span id="luz">--</span> %
+  </div>
+  <div class="card" id="cardAire">
+    💧 Aire: <span id="aire">--</span> %
+  </div>
+  <div class="card" id="cardTemp">
+    🌡️ Temp: <span id="temp">--</span> °C
+  </div>
 
-<div class="estado" id="estadoServidor">
-  🔴 Conectando...
-</div>
+<div class="estado" id="estadoServidor">🔴 Conectando...</div>
 
 <div class="botones">
   <button onclick="toggle('bomba')" id="btnBomba">Bomba OFF</button>
@@ -167,7 +197,6 @@ button.activo {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-
 
 <script>
 const canvas = document.getElementById("canvas3D");
@@ -249,68 +278,78 @@ setInterval(() => {
     new Date().toLocaleString();
 }, 1000);
 
-// Obtener datos sensores
-setInterval(() => {
-  fetch("/datos")
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("suelo").innerText = data.suelo;
-      document.getElementById("aire").innerText = data.aire;
-      document.getElementById("temp").innerText = data.temp;
-      document.getElementById("luz").innerText = data.luz;
-    });
-}, 2000);
+// 🔴 sistema visual errores
+function actualizarEstadoVisual(cardId, valor){
+  const card = document.getElementById(cardId);
+  const span = card.querySelector("span");
 
-//Toggle botón
-function toggle(dispositivo) {
-  fetch("/" + dispositivo, { method: "POST" })
-    .then(res => res.json())
-    .then(data => {
-      actualizarBoton(dispositivo, data.estado);
-    });
-}
-
-//Actualizar botones
-function actualizarBoton(dispositivo, estado) {
-  let btn;
-
-  if (dispositivo === "bomba") btn = document.getElementById("btnBomba");
-  if (dispositivo === "ventilador") btn = document.getElementById("btnVent");
-  if (dispositivo === "luces") btn = document.getElementById("btnLuz");
-
-  btn.innerText = dispositivo.toUpperCase() + " " + estado;
-
-  if (estado === "ON") {
-    btn.classList.add("activo");
-  } else {
-    btn.classList.remove("activo");
+  if(valor === "--" || valor == null){
+    card.classList.add("desconectado");
+    span.innerText = "--";
+  }else{
+    card.classList.remove("desconectado");
+    span.innerText = valor;
   }
 }
 
-// Estado servidor + sincronización
-setInterval(() => {
+// 📊 sensores
+setInterval(()=>{
+  fetch("/datos")
+  .then(r=>r.json())
+  .then(data=>{
+    actualizarEstadoVisual("cardSuelo", data.suelo);
+    actualizarEstadoVisual("cardLuz", data.luz);
+    actualizarEstadoVisual("cardAire", data.aire);
+    actualizarEstadoVisual("cardTemp", data.temp);
+  })
+  .catch(()=>{
+    actualizarEstadoVisual("cardSuelo","--");
+    actualizarEstadoVisual("cardLuz","--");
+    actualizarEstadoVisual("cardAire","--");
+    actualizarEstadoVisual("cardTemp","--");
+  });
+},2000);
+
+// 🔘 botones
+function toggle(d){
+  fetch("/"+d,{method:"POST"})
+  .then(r=>r.json())
+  .then(data=>actualizarBoton(d,data.estado));
+}
+
+function actualizarBoton(d,e){
+  const btn = document.getElementById(
+    d==="bomba"?"btnBomba":
+    d==="ventilador"?"btnVent":"btnLuz"
+  );
+  btn.innerText = d+" "+e;
+  btn.classList.toggle("activo", e==="ON");
+}
+
+// 🟢 estado servidor
+setInterval(()=>{
   fetch("/estado")
-    .then(res => res.json())
-    .then(data => {
+  .then(r=>r.json())
+  .then(data=>{
+    const est = document.getElementById("estadoServidor");
 
-      let estado = document.getElementById("estadoServidor");
+    if(data.esp32){
+      est.innerText = "🟢 Servidor conectado";
+      est.classList.remove("desconectado");
+    }else{
+      est.innerText = "🔴 ESP32 desconectado";
+      est.classList.add("desconectado");
+    }
 
-      if (data.esp32) {
-        estado.innerText = "🟢 Servidor conectado";
-      } else {
-        estado.innerText = "🔴 Servidor desconectado";
-      }
-
-      actualizarBoton("bomba", data.dispositivos.bomba ? "ON" : "OFF");
-      actualizarBoton("ventilador", data.dispositivos.ventilador ? "ON" : "OFF");
-      actualizarBoton("luces", data.dispositivos.luces ? "ON" : "OFF");
-    })
-    .catch(() => {
-      document.getElementById("estadoServidor").innerText =
-        "🔴 Sin conexión al servidor";
-    });
-
-}, 2000);
+    actualizarBoton("bomba", data.dispositivos.bomba?"ON":"OFF");
+    actualizarBoton("ventilador", data.dispositivos.ventilador?"ON":"OFF");
+    actualizarBoton("luces", data.dispositivos.luces?"ON":"OFF");
+  })
+  .catch(()=>{
+    estadoServidor.innerText="🔴 Sin conexión";
+    estadoServidor.classList.add("desconectado");
+  });
+},2000);
 
 </script>
 

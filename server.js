@@ -13,68 +13,116 @@ app.use(express.static(path.join(__dirname, "public")));
 // MQTT
 const client = mqtt.connect("mqtt://broker.hivemq.com");
 
+// control de tiempo
 let ultimaLectura = 0;
 
-//VARIABLES
+// VARIABLES SENSORES
 let humedadSuelo = "--";
 let humedadAire = "--";
 let temperatura = "--";
-let luz = "--"; //NUEVO
+let luz = "--";
 
-// Estados de dispositivos
+// timestamps individuales
+let tSuelo = 0;
+let tAire = 0;
+let tTemp = 0;
+let tLuz = 0;
+
+//ESTADOS ACTUADORES
 let estados = {
   bomba: false,
   ventilador: false,
   luces: false
 };
 
+// ESTADO REAL
+let estadoReal = {
+  bomba: "--",
+  ventilador: "--"
+};
+
+let tBomba = 0;
+let tVentilador = 0;
+
 client.on("connect", () => {
   console.log("Conectado a MQTT");
 
-  //SUSCRIPCIONES
+  // SUSCRIPCIONES
   client.subscribe("esp32/humedad_suelo");
   client.subscribe("esp32/humedad_amb");
   client.subscribe("esp32/temperatura");
-  client.subscribe("esp32/luz"); 
+  client.subscribe("esp32/luz");
+
+  // estados reales
+  client.subscribe("esp32/bomba_estado");
+  client.subscribe("esp32/ventilador_estado");
 });
 
-//RECEPCIÓN DE DATOS
+// RECEPCIÓN DE DATOS
 client.on("message", (topic, message) => {
   const data = message.toString();
+  const now = Date.now();
 
   if (topic === "esp32/humedad_suelo") {
     humedadSuelo = data;
-    ultimaLectura = Date.now();
-    console.log("Suelo:", humedadSuelo);
+    tSuelo = now;
+    ultimaLectura = now;
   }
 
   if (topic === "esp32/humedad_amb") {
     humedadAire = data;
-    console.log("Aire:", humedadAire);
+    tAire = now;
   }
 
   if (topic === "esp32/temperatura") {
     temperatura = data;
-    console.log("Temp:", temperatura);
+    tTemp = now;
   }
 
   if (topic === "esp32/luz") {
     luz = data;
-    console.log("Luz:", luz);
+    tLuz = now;
+  }
+
+  // ACTUADORES
+  if (topic === "esp32/bomba_estado") {
+    estadoReal.bomba = data;
+    tBomba = now;
+  }
+
+  if (topic === "esp32/ventilador_estado") {
+    estadoReal.ventilador = data;
+    tVentilador = now;
   }
 });
 
-//DATOS PARA EL FRONTEND
+//TIMEOUT
+function verificarTimeouts() {
+  const now = Date.now();
+
+  if (now - tSuelo > 10000) humedadSuelo = "--";
+  if (now - tAire > 10000) humedadAire = "--";
+  if (now - tTemp > 10000) temperatura = "--";
+  if (now - tLuz > 10000) luz = "--";
+
+  if (now - tBomba > 10000) estadoReal.bomba = "--";
+  if (now - tVentilador > 10000) estadoReal.ventilador = "--";
+}
+
+//DATOS PARA FRONTEND
 app.get("/datos", (req, res) => {
+  verificarTimeouts();
+
   res.json({
     suelo: humedadSuelo,
     aire: humedadAire,
     temp: temperatura,
-    luz: luz 
+    luz: luz,
+    actuadores: estadoReal 
   });
 });
 
-//FUNCIÓN TOGGLE
+// TOGGLE
 function toggle(dispositivo) {
   estados[dispositivo] = !estados[dispositivo];
   return estados[dispositivo] ? "ON" : "OFF";
@@ -108,7 +156,8 @@ app.get("/estado", (req, res) => {
 
   res.json({
     esp32: conectadoESP32,
-    dispositivos: estados
+    dispositivos: estados,
+    actuadores: estadoReal
   });
 });
 
