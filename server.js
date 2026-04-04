@@ -2,6 +2,7 @@ const express = require("express");
 const mqtt = require("mqtt");
 const cors = require("cors");
 const path = require("path");
+const sqlite3 = require("sqlite3").verbose(); //NUEVO
 
 const app = express();
 app.use(cors());
@@ -9,6 +10,20 @@ app.use(express.json());
 
 // Servir HTML
 app.use(express.static(path.join(__dirname, "public")));
+
+//BASE DE DATOS
+const db = new sqlite3.Database("sensores.db");
+
+db.run(`
+  CREATE TABLE IF NOT EXISTS datos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    suelo INTEGER,
+    aire REAL,
+    temperatura REAL,
+    luz INTEGER,
+    fecha DATETIME DEFAULT (datetime('now', 'localtime'))
+  )
+`);
 
 // MQTT
 const client = mqtt.connect("mqtt://broker.hivemq.com");
@@ -28,7 +43,7 @@ let tAire = 0;
 let tTemp = 0;
 let tLuz = 0;
 
-//ESTADOS ACTUADORES
+// ESTADOS ACTUADORES
 let estados = {
   bomba: false,
   ventilador: false,
@@ -47,18 +62,16 @@ let tVentilador = 0;
 client.on("connect", () => {
   console.log("Conectado a MQTT");
 
-  // SUSCRIPCIONES
   client.subscribe("esp32/humedad_suelo");
   client.subscribe("esp32/humedad_amb");
   client.subscribe("esp32/temperatura");
   client.subscribe("esp32/luz");
 
-  // estados reales
   client.subscribe("esp32/bomba_estado");
   client.subscribe("esp32/ventilador_estado");
 });
 
-// RECEPCIÓN DE DATOS
+// RECEPCIÓN
 client.on("message", (topic, message) => {
   const data = message.toString();
   const now = Date.now();
@@ -84,7 +97,6 @@ client.on("message", (topic, message) => {
     tLuz = now;
   }
 
-  // ACTUADORES
   if (topic === "esp32/bomba_estado") {
     estadoReal.bomba = data;
     tBomba = now;
@@ -96,7 +108,36 @@ client.on("message", (topic, message) => {
   }
 });
 
-//TIMEOUT
+//GUARDAR DATOS AUTOMÁTICAMENTE
+setInterval(() => {
+
+  if (
+  humedadSuelo !== "--" &&
+  humedadAire !== "--" &&
+  temperatura !== "--" &&
+  luz !== "--" &&
+  !isNaN(humedadSuelo) &&
+  !isNaN(humedadAire) &&
+  !isNaN(temperatura) &&
+  !isNaN(luz)
+  ) {
+    db.run(
+      `INSERT INTO datos (suelo, aire, temperatura, luz, fecha) 
+        VALUES (?, ?, ?, ?, datetime('now','localtime'))`,
+      [
+        parseInt(humedadSuelo),
+        parseFloat(humedadAire),
+        parseFloat(temperatura),
+        parseInt(luz)
+      ]
+    );
+
+    console.log("Datos guardados");
+  }
+
+}, 5000);
+
+// TIMEOUT
 function verificarTimeouts() {
   const now = Date.now();
 
@@ -109,7 +150,7 @@ function verificarTimeouts() {
   if (now - tVentilador > 10000) estadoReal.ventilador = "--";
 }
 
-//DATOS PARA FRONTEND
+// DATOS FRONTEND
 app.get("/datos", (req, res) => {
   verificarTimeouts();
 
@@ -118,8 +159,25 @@ app.get("/datos", (req, res) => {
     aire: humedadAire,
     temp: temperatura,
     luz: luz,
-    actuadores: estadoReal 
+    actuadores: estadoReal
   });
+});
+
+//HISTORIAL
+app.get("/historial", (req, res) => {
+
+  db.all(
+    "SELECT * FROM datos ORDER BY id ASC LIMIT 100",
+    [],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
+    }
+  );
+
 });
 
 // TOGGLE
@@ -159,6 +217,45 @@ app.get("/estado", (req, res) => {
     dispositivos: estados,
     actuadores: estadoReal
   });
+});
+
+app.get("/historial/:fecha", (req, res) => {
+
+  const fecha = req.params.fecha; // formato: YYYY-MM-DD
+
+  db.all(
+    `
+    SELECT * FROM datos 
+    WHERE date(fecha) = ?
+    ORDER BY fecha ASC
+    `,
+    [fecha],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
+    }
+  );
+
+});
+
+app.get("/fechas", (req, res) => {
+
+  db.all(
+    `
+    SELECT DISTINCT date(fecha) as dia 
+    FROM datos 
+    ORDER BY dia DESC
+    `,
+    [],
+    (err, rows) => {
+      if (err) res.status(500).send(err);
+      else res.json(rows);
+    }
+  );
+
 });
 
 app.listen(3000, () => {
