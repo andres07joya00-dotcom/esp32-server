@@ -2,55 +2,47 @@ const express = require("express");
 const mqtt = require("mqtt");
 const cors = require("cors");
 const path = require("path");
-const sqlite3 = require("sqlite3").verbose(); //NUEVO
+const { createClient } = require('@supabase/supabase-js');
+
+//SUPABASE
+const supabase = createClient(
+  "https://lzujcfptslakotqjxtwu.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dWpjZnB0c2xha290cWp4dHd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzU3MTQsImV4cCI6MjA5MDkxMTcxNH0.MejQ8OWgfBX244Uet_9LKJRGlkGw2Ihwzrb6UyBXxRA"
+);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// Servir HTML
 app.use(express.static(path.join(__dirname, "public")));
-
-//BASE DE DATOS
-const db = new sqlite3.Database("sensores.db");
-
-db.run(`
-  CREATE TABLE IF NOT EXISTS datos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    suelo INTEGER,
-    aire REAL,
-    temperatura REAL,
-    luz INTEGER,
-    fecha DATETIME DEFAULT (datetime('now', 'localtime'))
-  )
-`);
 
 // MQTT
 const client = mqtt.connect("mqtt://broker.hivemq.com");
 
-// control de tiempo
+// CONTROL
 let ultimaLectura = 0;
 
-// VARIABLES SENSORES
+// VARIABLES
 let humedadSuelo = "--";
 let humedadAire = "--";
 let temperatura = "--";
 let luz = "--";
 
-// timestamps individuales
+// TIMESTAMPS
 let tSuelo = 0;
 let tAire = 0;
 let tTemp = 0;
 let tLuz = 0;
 
-// ESTADOS ACTUADORES
+// BUFFER PROMEDIO
+let buffer = [];
+
+// ACTUADORES
 let estados = {
   bomba: false,
   ventilador: false,
   luces: false
 };
 
-// ESTADO REAL
 let estadoReal = {
   bomba: "--",
   ventilador: "--"
@@ -59,6 +51,7 @@ let estadoReal = {
 let tBomba = 0;
 let tVentilador = 0;
 
+// MQTT CONNECT
 client.on("connect", () => {
   console.log("Conectado a MQTT");
 
@@ -71,7 +64,7 @@ client.on("connect", () => {
   client.subscribe("esp32/ventilador_estado");
 });
 
-// RECEPCIÓN
+// MQTT RECEIVE
 client.on("message", (topic, message) => {
   const data = message.toString();
   const now = Date.now();
@@ -97,6 +90,21 @@ client.on("message", (topic, message) => {
     tLuz = now;
   }
 
+  //BUFFER
+  if (
+    humedadSuelo !== "--" &&
+    humedadAire !== "--" &&
+    temperatura !== "--" &&
+    luz !== "--"
+  ) {
+    buffer.push({
+      suelo: parseInt(humedadSuelo),
+      aire: parseFloat(humedadAire),
+      temperatura: parseFloat(temperatura),
+      luz: parseInt(luz)
+    });
+  }
+
   if (topic === "esp32/bomba_estado") {
     estadoReal.bomba = data;
     tBomba = now;
@@ -108,34 +116,42 @@ client.on("message", (topic, message) => {
   }
 });
 
-//GUARDAR DATOS AUTOMÁTICAMENTE
-setInterval(() => {
+// GUARDAR PROMEDIO EN SUPABASE
+setInterval(async () => {
 
-  if (
-  humedadSuelo !== "--" &&
-  humedadAire !== "--" &&
-  temperatura !== "--" &&
-  luz !== "--" &&
-  !isNaN(humedadSuelo) &&
-  !isNaN(humedadAire) &&
-  !isNaN(temperatura) &&
-  !isNaN(luz)
-  ) {
-    db.run(
-      `INSERT INTO datos (suelo, aire, temperatura, luz, fecha) 
-        VALUES (?, ?, ?, ?, datetime('now','localtime'))`,
-      [
-        parseInt(humedadSuelo),
-        parseFloat(humedadAire),
-        parseFloat(temperatura),
-        parseInt(luz)
-      ]
-    );
+  if (buffer.length === 0) return;
 
-    console.log("Datos guardados");
+  let suma = { suelo: 0, aire: 0, temperatura: 0, luz: 0 };
+
+  buffer.forEach(d => {
+    suma.suelo += d.suelo;
+    suma.aire += d.aire;
+    suma.temperatura += d.temperatura;
+    suma.luz += d.luz;
+  });
+
+  const n = buffer.length;
+
+  const promedio = {
+    suelo: Math.round(suma.suelo / n),
+    aire: parseFloat((suma.aire / n).toFixed(1)),
+    temperatura: parseFloat((suma.temperatura / n).toFixed(1)),
+    luz: Math.round(suma.luz / n)
+  };
+
+  const { error } = await supabase
+    .from("datos")
+    .insert([promedio]);
+
+  if (error) {
+    console.error("❌ Error guardando:", error);
+  } else {
+    console.log("📦 Guardado en Supabase:", promedio);
   }
 
-}, 5000);
+  buffer = [];
+
+}, 60000);
 
 // TIMEOUT
 function verificarTimeouts() {
@@ -163,21 +179,51 @@ app.get("/datos", (req, res) => {
   });
 });
 
-//HISTORIAL
-app.get("/historial", (req, res) => {
+//HISTORIAL GENERAL
+app.get("/historial", async (req, res) => {
 
-  db.all(
-    "SELECT * FROM datos ORDER BY id ASC LIMIT 100",
-    [],
-    (err, rows) => {
-      if (err) {
-        res.status(500).send(err);
-      } else {
-        res.json(rows);
-      }
-    }
-  );
+  const { data, error } = await supabase
+    .from("datos")
+    .select("*")
+    .order("created_at", { ascending: true })
+    .limit(100);
 
+  if (error) return res.status(500).send(error);
+
+  res.json(data);
+});
+
+//HISTORIAL POR FECHA
+app.get("/historial/:fecha", async (req, res) => {
+
+  const fecha = req.params.fecha;
+
+  const { data, error } = await supabase
+    .from("datos")
+    .select("*")
+    .gte("created_at", fecha + "T00:00:00")
+    .lte("created_at", fecha + "T23:59:59")
+    .order("created_at", { ascending: true });
+
+  if (error) return res.status(500).send(error);
+
+  res.json(data);
+});
+
+//LISTA DE FECHAS
+app.get("/fechas", async (req, res) => {
+
+  const { data, error } = await supabase
+    .from("datos")
+    .select("created_at");
+
+  if (error) return res.status(500).send(error);
+
+  const fechas = [...new Set(
+    data.map(d => d.created_at.split("T")[0])
+  )];
+
+  res.json(fechas);
 });
 
 // TOGGLE
@@ -186,21 +232,18 @@ function toggle(dispositivo) {
   return estados[dispositivo] ? "ON" : "OFF";
 }
 
-// BOMBA
 app.post("/bomba", (req, res) => {
   const estado = toggle("bomba");
   client.publish("esp32/bomba", estado);
   res.json({ estado });
 });
 
-// VENTILADOR
 app.post("/ventilador", (req, res) => {
   const estado = toggle("ventilador");
   client.publish("esp32/ventilador", estado);
   res.json({ estado });
 });
 
-// LUCES
 app.post("/luces", (req, res) => {
   const estado = toggle("luces");
   client.publish("esp32/luces", estado);
@@ -217,45 +260,6 @@ app.get("/estado", (req, res) => {
     dispositivos: estados,
     actuadores: estadoReal
   });
-});
-
-app.get("/historial/:fecha", (req, res) => {
-
-  const fecha = req.params.fecha; // formato: YYYY-MM-DD
-
-  db.all(
-    `
-    SELECT * FROM datos 
-    WHERE date(fecha) = ?
-    ORDER BY fecha ASC
-    `,
-    [fecha],
-    (err, rows) => {
-      if (err) {
-        res.status(500).send(err);
-      } else {
-        res.json(rows);
-      }
-    }
-  );
-
-});
-
-app.get("/fechas", (req, res) => {
-
-  db.all(
-    `
-    SELECT DISTINCT date(fecha) as dia 
-    FROM datos 
-    ORDER BY dia DESC
-    `,
-    [],
-    (err, rows) => {
-      if (err) res.status(500).send(err);
-      else res.json(rows);
-    }
-  );
-
 });
 
 app.listen(3000, () => {

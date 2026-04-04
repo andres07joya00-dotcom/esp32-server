@@ -176,6 +176,18 @@ button.activo {
 
 <div class="titulo">INVERNADERO</div>
 
+<div style="position:absolute; top:15px; right:15px;">
+  <button onclick="irGraficas()" style="
+    font-size: 24px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+  ">
+    ➡️
+  </button>
+</div>
+
 <div class="imagen">
   <canvas id="canvas3D"></canvas>
 </div>
@@ -262,7 +274,7 @@ loader.load("/model/invernadero.glb",
 
 camera.position.z = 3;
 
-// Resize automático PERFECTO
+//Resize automático PERFECTO
 const resizeObserver = new ResizeObserver(() => {
   const rect = canvas.getBoundingClientRect();
   camera.aspect = rect.width / rect.height;
@@ -287,7 +299,7 @@ setInterval(() => {
     new Date().toLocaleString();
 }, 1000);
 
-// 🔴 sistema visual errores
+//Sistema visual errores
 function actualizarEstadoVisual(cardId, valor){
   const card = document.getElementById(cardId);
   const span = card.querySelector("span");
@@ -301,7 +313,7 @@ function actualizarEstadoVisual(cardId, valor){
   }
 }
 
-// 📊 sensores
+//sensores
 setInterval(()=>{
   fetch("/datos")
   .then(r=>r.json())
@@ -335,7 +347,11 @@ function actualizarBoton(d,e){
   btn.classList.toggle("activo", e==="ON");
 }
 
-// 🟢 estado servidor
+function irGraficas() {
+  window.location.href = "/graficas.html";
+}
+
+//estado servidor
 setInterval(()=>{
   fetch("/estado")
   .then(r=>r.json())
