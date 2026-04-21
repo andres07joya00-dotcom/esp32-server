@@ -213,7 +213,7 @@ button.activo {
 <div class="botones">
   <button onclick="toggle('bomba')" id="btnBomba">Bomba OFF</button>
   <button onclick="toggle('ventilador')" id="btnVent">Ventilador OFF</button>
-  <button onclick="toggle('luces')" id="btnLuz">Luces OFF</button>
+  <button onclick="toggle('led')" id="btnLuz">Luces OFF</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -368,7 +368,7 @@ setInterval(()=>{
 
     actualizarBoton("bomba", data.dispositivos.bomba?"ON":"OFF");
     actualizarBoton("ventilador", data.dispositivos.ventilador?"ON":"OFF");
-    actualizarBoton("luces", data.dispositivos.luces?"ON":"OFF");
+    actualizarBoton("led", data.dispositivos.luces?"ON":"OFF");
   })
   .catch(()=>{
     estadoServidor.innerText="🔴 Sin conexión";

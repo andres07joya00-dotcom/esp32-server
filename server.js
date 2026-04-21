@@ -4,10 +4,10 @@ const cors = require("cors");
 const path = require("path");
 const { createClient } = require('@supabase/supabase-js');
 
-//SUPABASE
+// SUPABASE
 const supabase = createClient(
   "https://lzujcfptslakotqjxtwu.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dWpjZnB0c2xha290cWp4dHd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzU3MTQsImV4cCI6MjA5MDkxMTcxNH0.MejQ8OWgfBX244Uet_9LKJRGlkGw2Ihwzrb6UyBXxRA"
+  "TU_API_KEY_AQUI" // 🔒 te recomiendo mover esta clave a variables de entorno
 );
 
 const app = express();
@@ -45,11 +45,13 @@ let estados = {
 
 let estadoReal = {
   bomba: "--",
-  ventilador: "--"
+  ventilador: "--",
+  led: "--"
 };
 
 let tBomba = 0;
 let tVentilador = 0;
+let tLed = 0;
 
 // MQTT CONNECT
 client.on("connect", () => {
@@ -62,6 +64,7 @@ client.on("connect", () => {
 
   client.subscribe("esp32/bomba_estado");
   client.subscribe("esp32/ventilador_estado");
+  client.subscribe("esp32/led_estado"); // 🔥 LED
 });
 
 // MQTT RECEIVE
@@ -90,7 +93,7 @@ client.on("message", (topic, message) => {
     tLuz = now;
   }
 
-  //BUFFER
+  // BUFFER
   if (
     humedadSuelo !== "--" &&
     humedadAire !== "--" &&
@@ -113,6 +116,11 @@ client.on("message", (topic, message) => {
   if (topic === "esp32/ventilador_estado") {
     estadoReal.ventilador = data;
     tVentilador = now;
+  }
+
+  if (topic === "esp32/led_estado") {
+    estadoReal.led = data;
+    tLed = now;
   }
 });
 
@@ -164,6 +172,7 @@ function verificarTimeouts() {
 
   if (now - tBomba > 10000) estadoReal.bomba = "--";
   if (now - tVentilador > 10000) estadoReal.ventilador = "--";
+  if (now - tLed > 10000) estadoReal.led = "--";
 }
 
 // DATOS FRONTEND
@@ -179,9 +188,8 @@ app.get("/datos", (req, res) => {
   });
 });
 
-//HISTORIAL GENERAL
+// HISTORIAL GENERAL
 app.get("/historial", async (req, res) => {
-
   const { data, error } = await supabase
     .from("datos")
     .select("*")
@@ -189,11 +197,10 @@ app.get("/historial", async (req, res) => {
     .limit(100);
 
   if (error) return res.status(500).send(error);
-
   res.json(data);
 });
 
-//HISTORIAL POR FECHA
+// HISTORIAL POR FECHA
 app.get("/historial/:fecha", async (req, res) => {
 
   const fecha = req.params.fecha;
@@ -206,11 +213,10 @@ app.get("/historial/:fecha", async (req, res) => {
     .order("created_at", { ascending: true });
 
   if (error) return res.status(500).send(error);
-
   res.json(data);
 });
 
-//LISTA DE FECHAS
+// LISTA DE FECHAS
 app.get("/fechas", async (req, res) => {
 
   const { data, error } = await supabase
@@ -232,6 +238,7 @@ function toggle(dispositivo) {
   return estados[dispositivo] ? "ON" : "OFF";
 }
 
+// ACTUADORES
 app.post("/bomba", (req, res) => {
   const estado = toggle("bomba");
   client.publish("esp32/bomba", estado);
@@ -244,9 +251,9 @@ app.post("/ventilador", (req, res) => {
   res.json({ estado });
 });
 
-app.post("/luces", (req, res) => {
+app.post("/led", (req, res) => {
   const estado = toggle("luces");
-  client.publish("esp32/luces", estado);
+  client.publish("esp32/led", estado);
   res.json({ estado });
 });
 
