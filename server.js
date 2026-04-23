@@ -253,7 +253,7 @@ app.post("/ventilador", (req, res) => {
 
 app.post("/led", (req, res) => {
   client.publish("esp32/led", "ON"); 
-  res.json({ ok: true });
+  res.json({ estado: "ON" });
 });
 
 // ESTADO GENERAL
