@@ -221,6 +221,9 @@ button.activo {
 
 <script>
 const canvas = document.getElementById("canvas3D");
+
+let estadoColorLed = 0;
+
 const rect = canvas.getBoundingClientRect();
 
 const scene = new THREE.Scene();
@@ -335,7 +338,13 @@ setInterval(()=>{
 function toggle(d){
   fetch("/"+d,{method:"POST"})
   .then(r=>r.json())
-  .then(data=>actualizarBoton(d,data.estado));
+  .then(data=>{
+    actualizarBoton(d,data.estado);
+
+    if(d === "led"){
+      cambiarColorBotonLed();
+    }
+  });
 }
 
 function actualizarBoton(d,e){
@@ -347,6 +356,48 @@ function actualizarBoton(d,e){
   btn.classList.toggle("activo", e==="ON");
 }
 
+function cambiarColorBotonLed(){
+  const btn = document.getElementById("btnLuz");
+
+  estadoColorLed++;
+
+  if(estadoColorLed > 5) estadoColorLed = 0;
+
+  btn.style.color = "white";
+
+  switch(estadoColorLed){
+    case 1:
+      btn.style.background = "red";
+      btn.innerText = "Luces ROJO";
+      break;
+
+    case 2:
+      btn.style.background = "green";
+      btn.innerText = "Luces VERDE";
+      break;
+
+    case 3:
+      btn.style.background = "blue";
+      btn.innerText = "Luces AZUL";
+      break;
+
+    case 4:
+      btn.style.background = "white";
+      btn.style.color = "black";
+      btn.innerText = "Luces BLANCO";
+      break;
+
+    case 5:
+      btn.style.background = "purple";
+      btn.innerText = "Luces MORADO";
+      break;
+
+    default:
+      btn.style.background = "";
+      btn.style.color = "white";
+      btn.innerText = "Luces OFF";
+  }
+}
 function irGraficas() {
   window.location.href = "/graficas.html";
 }
@@ -368,7 +419,6 @@ setInterval(()=>{
 
     actualizarBoton("bomba", data.dispositivos.bomba?"ON":"OFF");
     actualizarBoton("ventilador", data.dispositivos.ventilador?"ON":"OFF");
-    actualizarBoton("led", data.dispositivos.luces?"ON":"OFF");
   })
   .catch(()=>{
     estadoServidor.innerText="🔴 Sin conexión";

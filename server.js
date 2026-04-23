@@ -64,7 +64,7 @@ client.on("connect", () => {
 
   client.subscribe("esp32/bomba_estado");
   client.subscribe("esp32/ventilador_estado");
-  client.subscribe("esp32/led_estado"); // 🔥 LED
+  client.subscribe("esp32/led_estado"); // 
 });
 
 // MQTT RECEIVE
@@ -252,9 +252,8 @@ app.post("/ventilador", (req, res) => {
 });
 
 app.post("/led", (req, res) => {
-  const estado = toggle("luces");
-  client.publish("esp32/led", estado);
-  res.json({ estado });
+  client.publish("esp32/led", "ON"); 
+  res.json({ ok: true });
 });
 
 // ESTADO GENERAL
