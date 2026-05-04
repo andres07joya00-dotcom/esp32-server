@@ -7,7 +7,7 @@ const { createClient } = require('@supabase/supabase-js');
 // SUPABASE
 const supabase = createClient(
   "https://lzujcfptslakotqjxtwu.supabase.co",
-  "TU_API_KEY_AQUI" // 🔒 te recomiendo mover esta clave a variables de entorno
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6dWpjZnB0c2xha290cWp4dHd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzMzU3MTQsImV4cCI6MjA5MDkxMTcxNH0.MejQ8OWgfBX244Uet_9LKJRGlkGw2Ihwzrb6UyBXxRA" 
 );
 
 const app = express();
@@ -251,9 +251,14 @@ app.post("/ventilador", (req, res) => {
   res.json({ estado });
 });
 
-app.post("/led", (req, res) => {
-  client.publish("esp32/led", "ON"); 
-  res.json({ estado: "ON" });
+app.post("/color", (req, res) => {
+  const { r, g, b } = req.body;
+
+  const color = `${r},${g},${b}`;
+
+  client.publish("esp32/color", color);
+
+  res.json({ ok: true });
 });
 
 // ESTADO GENERAL

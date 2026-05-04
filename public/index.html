@@ -169,6 +169,27 @@ button.activo {
   background: linear-gradient(145deg, #4caf50, #45a049);
   box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
 }
+
+.panel-colores {
+  position: fixed;
+  bottom: 90px;
+  display: none;
+  background: rgba(255,255,255,0.95);
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  gap: 10px;
+  z-index: 1000;
+}
+
+.panel-colores button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 </style>
 
 </head>
@@ -214,6 +235,15 @@ button.activo {
   <button onclick="toggle('bomba')" id="btnBomba">Bomba OFF</button>
   <button onclick="toggle('ventilador')" id="btnVent">Ventilador OFF</button>
   <button onclick="toggle('led')" id="btnLuz">Luces OFF</button>
+</div>
+
+<div id="panelColores" class="panel-colores">
+  <button onclick="setColor(255,0,0)" style="background:red;"></button>
+  <button onclick="setColor(0,255,0)" style="background:green;"></button>
+  <button onclick="setColor(0,0,255)" style="background:blue;"></button>
+  <button onclick="setColor(255,255,255)" style="background:white; border:1px solid #ccc;"></button>
+  <button onclick="setColor(255,0,255)" style="background:purple;"></button>
+  <button onclick="setColor(0,0,0)" style="background:rgb(0, 0, 0);"></button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -336,15 +366,22 @@ setInterval(()=>{
 
 // 🔘 botones
 function toggle(d){
+
+  if(d === "led"){
+
+    fetch("/led",{method:"POST"})
+    const panel = document.getElementById("panelColores");
+
+    // Mostrar u ocultar panel
+    panel.style.display = 
+      panel.style.display === "flex" ? "none" : "flex";
+
+    return; 
+  }
+
   fetch("/"+d,{method:"POST"})
   .then(r=>r.json())
-  .then(data=>{
-    actualizarBoton(d,data.estado);
-
-    if(d === "led"){
-      cambiarColorBotonLed();
-    }
-  });
+  .then(data=>actualizarBoton(d,data.estado));
 }
 
 function actualizarBoton(d,e){
@@ -356,48 +393,49 @@ function actualizarBoton(d,e){
   btn.classList.toggle("activo", e==="ON");
 }
 
-function cambiarColorBotonLed(){
+function setColor(r,g,b){
+
+  fetch("/color",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({r,g,b})
+  });
+
   const btn = document.getElementById("btnLuz");
-
-  estadoColorLed++;
-
-  if(estadoColorLed > 5) estadoColorLed = 0;
 
   btn.style.color = "white";
 
-  switch(estadoColorLed){
-    case 1:
-      btn.style.background = "red";
-      btn.innerText = "Luces ROJO";
-      break;
-
-    case 2:
-      btn.style.background = "green";
-      btn.innerText = "Luces VERDE";
-      break;
-
-    case 3:
-      btn.style.background = "blue";
-      btn.innerText = "Luces AZUL";
-      break;
-
-    case 4:
-      btn.style.background = "white";
-      btn.style.color = "black";
-      btn.innerText = "Luces BLANCO";
-      break;
-
-    case 5:
-      btn.style.background = "purple";
-      btn.innerText = "Luces MORADO";
-      break;
-
-    default:
-      btn.style.background = "";
-      btn.style.color = "white";
-      btn.innerText = "Luces OFF";
+  if(r==255 && g==0 && b==0){
+    btn.style.background = "red";
+    btn.innerText = "Luces ROJO";
   }
+  else if(r==0 && g==255 && b==0){
+    btn.style.background = "green";
+    btn.innerText = "Luces VERDE";
+  }
+  else if(r==0 && g==0 && b==255){
+    btn.style.background = "blue";
+    btn.innerText = "Luces AZUL";
+  }
+  else if(r==255 && g==255 && b==255){
+    btn.style.background = "white";
+    btn.style.color = "black";
+    btn.innerText = "Luces BLANCO";
+  }
+  else if(r==255 && g==0 && b==255){
+    btn.style.background = "purple";
+    btn.innerText = "Luces MORADO";
+  }
+  else if(r==0 && g==0 && b==0){
+    btn.style.background = "";
+    btn.style.color = "white";
+    btn.innerText = "Luces OFF";
+  }
+
+  // opcional: cerrar panel después de elegir
+  document.getElementById("panelColores").style.display = "none";
 }
+
 function irGraficas() {
   window.location.href = "/graficas.html";
 }
