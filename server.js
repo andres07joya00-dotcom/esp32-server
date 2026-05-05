@@ -18,7 +18,10 @@ app.use(express.static(path.join(__dirname, "public")));
 app.post("/upload", express.raw({ type: "image/jpeg", limit: "5mb" }), async (req, res) => {
   try {
     const fileBuffer = req.body;
-    const fileName = `foto_${Date.now()}.jpg`;
+
+    const now = new Date();
+    const fileName = `foto_${now.toISOString()}.jpg`;
+
 
     const { error } = await supabase.storage
       .from("imagenes")
@@ -29,6 +32,22 @@ app.post("/upload", express.raw({ type: "image/jpeg", limit: "5mb" }), async (re
     if (error) {
       console.error("❌ Error subiendo imagen:", error);
       return res.status(500).send("Error subiendo imagen");
+    }
+
+    
+    const url = `https://lzujcfptslakotqjxtwu.supabase.co/storage/v1/object/public/imagenes/${fileName}`;
+
+    
+    const { error: dbError } = await supabase
+      .from("imagenes")
+      .insert([{
+        nombre: fileName,
+        url: url,
+        created_at: now
+      }]);
+
+    if (dbError) {
+      console.error("❌ Error guardando en BD:", dbError);
     }
 
     console.log("📸 Imagen guardada:", fileName);
@@ -269,6 +288,21 @@ app.get("/imagenes", async (req, res) => {
   );
 
   res.json(urls);
+});
+
+app.get("/imagenes/:fecha", async (req, res) => {
+  const fecha = req.params.fecha;
+
+  const { data, error } = await supabase
+    .from("imagenes")
+    .select("*")
+    .gte("created_at", fecha + "T00:00:00")
+    .lte("created_at", fecha + "T23:59:59")
+    .order("created_at", { ascending: true });
+
+  if (error) return res.status(500).send(error);
+
+  res.json(data);
 });
 
 // TOGGLE

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Galería - Invernadero</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(to right, #d9e8a1, #a8d5ba);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.titulo {
+  font-size: 32px;
+  margin: 20px;
+  font-weight: bold;
+  color: #2c5530;
+}
+
+.filtros {
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+}
+
+button {
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: #4caf50;
+  color: white;
+  font-weight: bold;
+}
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.img-card {
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.img-card img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.fecha {
+  font-size: 12px;
+  color: #555;
+  margin-top: 5px;
+}
+
+.volver {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+}
+</style>
+
+</head>
+<body>
+
+<button class="volver" onclick="volver()">⬅️</button>
+
+<div class="titulo">📸 Galería del Invernadero</div>
+
+<div class="filtros">
+  <input type="date" id="fechaInput">
+  <button onclick="filtrar()">Filtrar</button>
+</div>
+
+<div class="galeria" id="galeria"></div>
+
+<script>
+
+function volver(){
+  window.location.href = "/";
+}
+
+// 🔥 Cargar todas las imágenes
+async function cargarImagenes(){
+  const res = await fetch("/imagenes");
+  const data = await res.json();
+  renderizar(data);
+}
+
+// 🎯 Filtrar por fecha
+async function filtrar(){
+  const fecha = document.getElementById("fechaInput").value;
+
+  if(!fecha){
+    cargarImagenes();
+    return;
+  }
+
+  const res = await fetch("/imagenes/" + fecha);
+  const data = await res.json();
+  renderizar(data);
+}
+
+// 🎨 Renderizar galería
+function renderizar(lista){
+  const galeria = document.getElementById("galeria");
+  galeria.innerHTML = "";
+
+  if(lista.length === 0){
+    galeria.innerHTML = "<p>No hay imágenes</p>";
+    return;
+  }
+
+  lista.forEach(img => {
+    const div = document.createElement("div");
+    div.className = "img-card";
+
+    div.innerHTML = `
+      <img src="${img.url}" />
+      <div class="fecha">${new Date(img.created_at).toLocaleString()}</div>
+    `;
+
+    galeria.appendChild(div);
+  });
+}
+
+// 🔄 Auto actualización (simula stream 🔥)
+setInterval(cargarImagenes, 5000);
+
+// 🚀 iniciar
+cargarImagenes();
+
+</script>
+
+</body>
+</html>

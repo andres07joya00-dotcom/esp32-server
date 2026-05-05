@@ -235,6 +235,7 @@ button.activo {
   <button onclick="toggle('bomba')" id="btnBomba">Bomba OFF</button>
   <button onclick="toggle('ventilador')" id="btnVent">Ventilador OFF</button>
   <button onclick="toggle('led')" id="btnLuz">Luces OFF</button>
+  <button onclick="irCamara()" id="btnCamara">Camara</button>
 </div>
 
 <div id="panelColores" class="panel-colores">
@@ -346,6 +347,14 @@ function actualizarEstadoVisual(cardId, valor){
   }
 }
 
+function irCamara() {
+  const btn = document.getElementById("btnCamara");
+  btn.classList.add("activo");
+
+  setTimeout(() => {
+    window.location.href = "/camara.html";
+  }, 150);
+}
 //sensores
 setInterval(()=>{
   fetch("/datos")
