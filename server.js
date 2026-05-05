@@ -15,6 +15,31 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+app.post("/upload", express.raw({ type: "image/jpeg", limit: "5mb" }), async (req, res) => {
+  try {
+    const fileBuffer = req.body;
+    const fileName = `foto_${Date.now()}.jpg`;
+
+    const { error } = await supabase.storage
+      .from("imagenes")
+      .upload(fileName, fileBuffer, {
+        contentType: "image/jpeg"
+      });
+
+    if (error) {
+      console.error("❌ Error subiendo imagen:", error);
+      return res.status(500).send("Error subiendo imagen");
+    }
+
+    console.log("📸 Imagen guardada:", fileName);
+    res.send("OK");
+
+  } catch (err) {
+    console.error("❌ Error servidor:", err);
+    res.status(500).send("Error");
+  }
+});
+
 // MQTT
 const client = mqtt.connect("mqtt://broker.hivemq.com");
 
@@ -230,6 +255,20 @@ app.get("/fechas", async (req, res) => {
   )];
 
   res.json(fechas);
+});
+
+app.get("/imagenes", async (req, res) => {
+  const { data, error } = await supabase.storage
+    .from("imagenes")
+    .list("", { limit: 100 });
+
+  if (error) return res.status(500).send(error);
+
+  const urls = data.map(file =>
+    `https://lzujcfptslakotqjxtwu.supabase.co/storage/v1/object/public/imagenes/${file.name}`
+  );
+
+  res.json(urls);
 });
 
 // TOGGLE
