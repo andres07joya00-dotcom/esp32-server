@@ -92,32 +92,37 @@ button {
 
 <script>
 
+let modoFiltro = false;
+let intervalo = null;
+
 function volver(){
   window.location.href = "/";
 }
 
-// 🔥 Cargar todas las imágenes
 async function cargarImagenes(){
   const res = await fetch("/imagenes");
   const data = await res.json();
   renderizar(data);
 }
 
-// 🎯 Filtrar por fecha
 async function filtrar(){
   const fecha = document.getElementById("fechaInput").value;
 
   if(!fecha){
+    modoFiltro = false;
     cargarImagenes();
     return;
   }
 
+  modoFiltro = true;
+
   const res = await fetch("/imagenes/" + fecha);
   const data = await res.json();
+
   renderizar(data);
 }
 
-// 🎨 Renderizar galería
+
 function renderizar(lista){
   const galeria = document.getElementById("galeria");
   galeria.innerHTML = "";
@@ -140,10 +145,15 @@ function renderizar(lista){
   });
 }
 
-// 🔄 Auto actualización (simula stream 🔥)
-setInterval(cargarImagenes, 5000);
+function iniciarAutoRefresh(){
+  intervalo = setInterval(() => {
+    if(!modoFiltro){
+      cargarImagenes();
+    }
+  }, 5000);
+}
 
-// 🚀 iniciar
+iniciarAutoRefresh();
 cargarImagenes();
 
 </script>
