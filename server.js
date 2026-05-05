@@ -20,8 +20,7 @@ app.post("/upload", express.raw({ type: "image/jpeg", limit: "5mb" }), async (re
     const fileBuffer = req.body;
 
     const now = new Date();
-    const fileName = `foto_${now.toISOString()}.jpg`;
-
+    const fileName = `foto_${Date.now()}.jpg`;
 
     const { error } = await supabase.storage
       .from("imagenes")
@@ -34,16 +33,13 @@ app.post("/upload", express.raw({ type: "image/jpeg", limit: "5mb" }), async (re
       return res.status(500).send("Error subiendo imagen");
     }
 
-    
     const url = `https://lzujcfptslakotqjxtwu.supabase.co/storage/v1/object/public/imagenes/${fileName}`;
-
     
     const { error: dbError } = await supabase
       .from("imagenes")
       .insert([{
         nombre: fileName,
         url: url,
-        created_at: now
       }]);
 
     if (dbError) {
@@ -277,17 +273,14 @@ app.get("/fechas", async (req, res) => {
 });
 
 app.get("/imagenes", async (req, res) => {
-  const { data, error } = await supabase.storage
+  const { data, error } = await supabase
     .from("imagenes")
-    .list("", { limit: 100 });
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) return res.status(500).send(error);
 
-  const urls = data.map(file =>
-    `https://lzujcfptslakotqjxtwu.supabase.co/storage/v1/object/public/imagenes/${file.name}`
-  );
-
-  res.json(urls);
+  res.json(data);
 });
 
 app.get("/imagenes/:fecha", async (req, res) => {
