@@ -77,7 +77,7 @@ body {
   transform: scale(1.02);
 }
 
-.btn-filtrar, .btn-limpiar {
+.btn-filtrar, .btn-limpiar, .btn-timelapse {
   padding: 12px 24px;
   border: none;
   border-radius: 25px;
@@ -111,23 +111,168 @@ body {
   box-shadow: 0 8px 25px rgba(138, 143, 112, 0.4);
 }
 
-.estado {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  margin-left: 10px;
+.btn-timelapse {
+  background: linear-gradient(135deg, #FF6B35, #F7931E);
+  color: white;
+  animation: pulsoNaranja 2s infinite;
 }
 
-.estado.conectado {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  color: white;
+.btn-timelapse:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
 }
 
-.estado.desconectado {
-  background: linear-gradient(135deg, #f44336, #d32f2f);
+.btn-timelapse.pausado {
+  background: linear-gradient(135deg, #666, #888);
+  animation: none;
+}
+
+.btn-timelapse.pausado:hover {
+  box-shadow: 0 8px 25px rgba(102, 102, 102, 0.4);
+}
+
+/* Modal Timelapse - Estilo YouTube */
+.modal-timelapse {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.98);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-timelapse.mostrar {
+  display: flex;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+}
+
+#timelapseVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.controles-video {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  padding: 20px 20px 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-video {
+  background: rgba(255,255,255,0.1);
+  border: none;
   color: white;
-  animation: pulsoRojo 2s infinite;
+  padding: 10px 14px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.btn-video:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.1);
+}
+
+.btn-video.reiniciar {
+  font-size: 16px;
+  background: rgba(76,175,80,0.3);
+}
+
+.btn-video.reiniciar:hover {
+  background: rgba(76,175,80,0.5);
+}
+
+#progresoVideo {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 2.5px;
+  overflow: hidden;
+  cursor: pointer;
+  margin: 0 12px;
+  position: relative;
+}
+
+#barraProgreso {
+  height: 100%;
+  background: linear-gradient(90deg, #FF6B35, #F7931E);
+  width: 0%;
+  border-radius: 2.5px;
+  transition: width 0.1s linear;
+  position: relative;
+}
+
+#barraProgreso::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 100%;
+  background: rgba(255,255,255,0.5);
+  border-radius: 2.5px;
+}
+
+.tiempo-video {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Roboto', Arial, sans-serif;
+  min-width: 80px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.cerrar-modal {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.cerrar-modal:hover {
+  background: rgba(255,255,255,0.4);
+  transform: scale(1.1);
 }
 
 /* Galería Instagram */
@@ -240,9 +385,9 @@ body {
 }
 
 /* Animaciones */
-@keyframes pulsoRojo {
-  0%, 100% { box-shadow: 0 0 20px rgba(244,67,54,0.5); }
-  50% { box-shadow: 0 0 30px rgba(244,67,54,0.8); }
+@keyframes pulsoNaranja {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,107,53,0.5); }
+  50% { box-shadow: 0 0 30px rgba(255,107,53,0.8); }
 }
 
 @keyframes fadeInUp {
@@ -273,6 +418,7 @@ body {
   .titulo { font-size: 28px; }
   .controles { flex-direction: column; gap: 15px; }
   .filtros { width: 100%; justify-content: center; }
+  .video-container { max-width: 95vw; }
 }
 
 @media (max-width: 480px) {
@@ -281,6 +427,7 @@ body {
     gap: 20px;
   }
   body { padding: 15px; }
+  .controles-video { padding: 15px 15px 10px; }
 }
   </style>
 </head>
@@ -297,82 +444,317 @@ body {
       <button class="btn-filtrar" onclick="filtrar()">
         🔍 Filtrar
       </button>
-      <button class="btn-limpiar" onclick="limpiarFiltro()">
-        🧹 Limpiar
+      <button class="btn-limpiar" onclick="verTodas()">
+         📷 Ver todas
       </button>
-      <div class="estado conectado" id="estadoFeed">🟢 Live</div>
+      <button class="btn-timelapse" id="btnTimelapse">
+        ▶️ Timelapse
+      </button>
     </div>
   </div>
 </div>
 
 <div class="galeria" id="galeria"></div>
 
+<!-- Modal Timelapse - Estilo YouTube -->
+<div class="modal-timelapse" id="modalTimelapse">
+  <div class="video-container">
+    <button class="cerrar-modal" onclick="cerrarTimelapse()">✕</button>
+    <video id="timelapseVideo" muted playsinline></video>
+    <div class="controles-video">
+      <button class="btn-video" id="btnPlayPause" onclick="togglePlayPause()" title="Reproducir/Pausar">
+        ▶️
+      </button>
+      <button class="btn-video reiniciar" id="btnReiniciar" onclick="reiniciarTimelapse()" title="Reiniciar">↻</button>
+      <div id="progresoVideo" onclick="setVideoProgress(event)">
+        <div id="barraProgreso"></div>
+      </div>
+      <span class="tiempo-video" id="tiempoActual">0:00</span>
+      <span class="tiempo-video" id="tiempoTotal">--:--</span>
+      <button class="btn-video" onclick="cambiarVelocidad(0.5)" title="0.5x">0.5x</button>
+      <button class="btn-video" onclick="cambiarVelocidad(1)" title="1x">1x</button>
+      <button class="btn-video" onclick="cambiarVelocidad(2)" title="2x">2x</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let modoFiltro = false;
 let intervalo = null;
-let contadorActualizaciones = 0;
+let imagenesActuales = [];
+let reproduciendo = false;
+let velocidad = 1;
+let duracionTimelapse = 0;
+let frameActual = 0;
+let totalFrames = 0;
+let intervaloFrames = null;
+let canvas = null;
+let ctx = null;
+let stream = null;
+let timelapseFinalizado = false;
 
 function volver() {
   window.location.href = "/";
 }
 
-async function actualizarEstado(online) {
-  const estado = document.getElementById('estadoFeed');
-  if (online) {
-    estado.textContent = '🟢 Live';
-    estado.className = 'estado conectado';
-  } else {
-    estado.textContent = '🔴 Offline';
-    estado.className = 'estado desconectado';
-  }
+function formatearTiempo(segundos) {
+  const mins = Math.floor(segundos / 60);
+  const secs = Math.floor(segundos % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 async function cargarImagenes() {
   try {
     const res = await fetch("/imagenes");
+    if (!res.ok) throw new Error('Error en respuesta');
     const data = await res.json();
+    imagenesActuales = data;
     renderizar(data);
-    actualizarEstado(true);
-    contadorActualizaciones++;
+    return data;
   } catch (error) {
     console.error('Error cargando imágenes:', error);
-    actualizarEstado(false);
-    document.getElementById('galeria').innerHTML = 
-      '<div style="text-align:center;padding:60px;color:#666;font-size:18px;">🔌 Conectando con cámara...</div>';
+    mostrarErrorTemporal('🔌 Conectando con cámara...');
+    return [];
   }
+}
+
+function mostrarErrorTemporal(mensaje) {
+  const galeria = document.getElementById('galeria');
+  galeria.innerHTML = `<div style="grid-column: 1 / -1; text-align:center;padding:60px;color:#666;font-size:18px;">${mensaje}</div>`;
+}
+
+async function verTodas() {
+  modoFiltro = false;
+  document.getElementById("fechaInput").value = "";
+  
+  mostrarErrorTemporal('📱 Cargando todas las imágenes...');
+  
+  try {
+    const data = await cargarImagenes();
+    if (data.length === 0) {
+      mostrarErrorTemporal('📷 No hay imágenes disponibles');
+    }
+  } catch (error) {
+    console.error('Error en verTodas:', error);
+  }
+  
+  iniciarAutoRefresh();
+}
+
+function reiniciarControles() {
+  frameActual = 0;
+  timelapseFinalizado = false;
+  document.getElementById('barraProgreso').style.width = '0%';
+  document.getElementById('tiempoActual').textContent = '0:00';
+  document.getElementById('btnPlayPause').textContent = '▶️';
+  document.getElementById('btnReiniciar').style.opacity = '0.5';
+}
+
+function reiniciarTimelapse() {
+  if (timelapseFinalizado || frameActual === 0) return;
+  
+  reiniciarControles();
+  
+  // Recrear el stream para resetear posición
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+  
+  if (canvas && ctx) {
+    crearStreamVideo();
+  }
+}
+
+function crearStreamVideo() {
+  const video = document.getElementById('timelapseVideo');
+  const fps = 30;
+  stream = canvas.captureStream(fps);
+  video.srcObject = stream;
+}
+
+async function crearTimelapse() {
+  try {
+    const modal = document.getElementById('modalTimelapse');
+    const video = document.getElementById('timelapseVideo');
+    
+    if (imagenesActuales.length === 0) {
+      alert('No hay imágenes para el timelapse');
+      return;
+    }
+    
+    // Crear canvas
+    canvas = document.createElement('canvas');
+    ctx = canvas.getContext('2d');
+    canvas.width = 1280;
+    canvas.height = 720;
+    
+    // Calcular duración total
+    totalFrames = imagenesActuales.length;
+    duracionTimelapse = totalFrames * 0.1; // 100ms por frame base
+    
+    crearStreamVideo();
+    
+    // Resetear controles
+    reiniciarControles();
+    document.getElementById('tiempoTotal').textContent = formatearTiempo(duracionTimelapse);
+    
+    // Generar frames UNA SOLA VEZ (sin loop)
+    intervaloFrames = setInterval(() => {
+      if (frameActual < totalFrames && reproduciendo && !timelapseFinalizado) {
+        const imgData = imagenesActuales[frameActual];
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          frameActual++;
+          const progreso = (frameActual / totalFrames) * 100;
+          document.getElementById('barraProgreso').style.width = `${progreso}%`;
+          
+          const tiempoActual = (frameActual / totalFrames) * duracionTimelapse;
+          document.getElementById('tiempoActual').textContent = formatearTiempo(tiempoActual);
+          
+          // FINALIZAR cuando llega al final
+          if (frameActual >= totalFrames) {
+            timelapseFinalizado = true;
+            reproduciendo = false;
+            document.getElementById('btnPlayPause').textContent = '▶️';
+            document.getElementById('btnReiniciar').style.opacity = '1';
+          }
+        };
+        img.onerror = () => {
+          frameActual++; // Saltar frame fallido
+        };
+        img.src = imgData.url;
+      }
+    }, 100);
+
+    video.onloadedmetadata = () => {
+      modal.classList.add('mostrar');
+      video.play();
+      document.getElementById('btnReiniciar').style.opacity = '0.5';
+    };
+  } catch (error) {
+    console.error('Error creando timelapse:', error);
+  }
+}
+
+function toggleTimelapse() {
+  const btnTimelapse = document.getElementById('btnTimelapse');
+  
+  if (!reproduciendo && !timelapseFinalizado) {
+    reproduciendo = true;
+    btnTimelapse.textContent = '⏸️ Pausado';
+    btnTimelapse.classList.add('pausado');
+    crearTimelapse();
+  } else {
+    cerrarTimelapse();
+  }
+}
+
+function togglePlayPause() {
+  const video = document.getElementById('timelapseVideo');
+  const btnPlayPause = document.getElementById('btnPlayPause');
+  
+  if (!timelapseFinalizado) {
+    if (video.paused) {
+      video.play();
+      btnPlayPause.textContent = '⏸️';
+      reproduciendo = true;
+    } else {
+      video.pause();
+      btnPlayPause.textContent = '▶️';
+      reproduciendo = false;
+    }
+  }
+}
+
+function cambiarVelocidad(nuevaVelocidad) {
+  velocidad = nuevaVelocidad;
+  if (reproduciendo && !timelapseFinalizado) {
+    cerrarTimelapse();
+    setTimeout(() => {
+      reproduciendo = true;
+      crearTimelapse();
+    }, 100);
+  }
+}
+
+function setVideoProgress(event) {
+  if (timelapseFinalizado) return;
+  
+  const progreso = document.getElementById('progresoVideo');
+  const rect = progreso.getBoundingClientRect();
+  const pos = (event.clientX - rect.left) / rect.width;
+  
+  frameActual = Math.floor(pos * totalFrames);
+  const tiempo = pos * duracionTimelapse;
+  document.getElementById('tiempoActual').textContent = formatearTiempo(tiempo);
+  document.getElementById('barraProgreso').style.width = `${pos * 100}%`;
+}
+
+function cerrarTimelapse() {
+  const modal = document.getElementById('modalTimelapse');
+  const video = document.getElementById('timelapseVideo');
+  const btnTimelapse = document.getElementById('btnTimelapse');
+  
+  reproduciendo = false;
+  timelapseFinalizado = false;
+  
+  btnTimelapse.textContent = '▶️ Timelapse';
+  btnTimelapse.classList.remove('pausado');
+  
+  if (intervaloFrames) {
+    clearInterval(intervaloFrames);
+    intervaloFrames = null;
+  }
+  
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+  
+  if (video.srcObject) {
+    video.srcObject = null;
+  }
+  
+  if (canvas) {
+    canvas = null;
+    ctx = null;
+  }
+  
+  modal.classList.remove('mostrar');
+  
+  // Resetear controles
+  document.getElementById('barraProgreso').style.width = '0%';
+  document.getElementById('tiempoActual').textContent = '0:00';
+  document.getElementById('tiempoTotal').textContent = '--:--';
 }
 
 async function filtrar() {
   const fecha = document.getElementById("fechaInput").value;
   
   if (!fecha) {
-    limpiarFiltro();
+    verTodas();
     return;
   }
 
   modoFiltro = true;
   clearInterval(intervalo);
   
+  mostrarErrorTemporal('🔍 Filtrando imágenes...');
+  
   try {
-    document.getElementById('galeria').innerHTML = 
-      '<div style="text-align:center;padding:60px;color:#666;font-size:18px;">🔍 Filtrando imágenes...</div>';
-    
     const res = await fetch(`/imagenes/${fecha}`);
+    if (!res.ok) throw new Error('No hay imágenes');
     const data = await res.json();
+    imagenesActuales = data;
     renderizar(data);
-    actualizarEstado(true);
   } catch (error) {
     console.error('Error filtro:', error);
-    document.getElementById('galeria').innerHTML = 
-      '<div style="text-align:center;padding:60px;color:#f44336;font-weight:bold;">❌ No hay imágenes para esta fecha</div>';
+    mostrarErrorTemporal('❌ No hay imágenes para esta fecha');
   }
-}
-
-function limpiarFiltro() {
-  modoFiltro = false;
-  document.getElementById("fechaInput").value = "";
-  iniciarAutoRefresh();
-  cargarImagenes();
 }
 
 function renderizar(lista) {
@@ -422,21 +804,22 @@ function renderizar(lista) {
 
 function iniciarAutoRefresh() {
   clearInterval(intervalo);
-  intervalo = setInterval(() => {
+  intervalo = setInterval(async () => {
     if (!modoFiltro) {
-      cargarImagenes();
+      await cargarImagenes();
     }
   }, 60000);
 }
 
+// Event listeners
+document.getElementById('btnTimelapse').addEventListener('click', toggleTimelapse);
+
 // Inicializar
 document.addEventListener('DOMContentLoaded', () => {
-  // Fecha de hoy por defecto
   const hoy = new Date().toISOString().split('T')[0];
   document.getElementById('fechaInput').value = hoy;
   
-  cargarImagenes();
-  iniciarAutoRefresh();
+  verTodas();
 });
 </script>
 
