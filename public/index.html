@@ -64,7 +64,7 @@ body {
 /*Sensores */
 .contenedor {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
   margin-top: 10px;
   max-width: 500px;
@@ -222,6 +222,9 @@ button.activo {
   <div class="card" id="cardLuz">
     💡 Luz: <span id="luz">--</span> %
   </div>
+  <div class="card" id="cardLuzExterior">
+    ☀️ Luz Ext: <span id="luzExterior">--</span> %
+  </div>
   <div class="card" id="cardAire">
     💧 Aire: <span id="aire">--</span> %
   </div>
@@ -362,12 +365,14 @@ setInterval(()=>{
   .then(data=>{
     actualizarEstadoVisual("cardSuelo", data.suelo);
     actualizarEstadoVisual("cardLuz", data.luz);
+    actualizarEstadoVisual("cardLuzExterior", data.luzExterior);
     actualizarEstadoVisual("cardAire", data.aire);
     actualizarEstadoVisual("cardTemp", data.temp);
   })
   .catch(()=>{
     actualizarEstadoVisual("cardSuelo","--");
     actualizarEstadoVisual("cardLuz","--");
+    actualizarEstadoVisual("cardLuzExterior","--");
     actualizarEstadoVisual("cardAire","--");
     actualizarEstadoVisual("cardTemp","--");
   });

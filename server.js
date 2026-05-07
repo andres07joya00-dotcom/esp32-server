@@ -66,12 +66,14 @@ let humedadSuelo = "--";
 let humedadAire = "--";
 let temperatura = "--";
 let luz = "--";
+let luzExterior = "--";
 
 // TIMESTAMPS
 let tSuelo = 0;
 let tAire = 0;
 let tTemp = 0;
 let tLuz = 0;
+let tLuzExterior = 0;
 
 // BUFFER PROMEDIO
 let buffer = [];
@@ -101,6 +103,7 @@ client.on("connect", () => {
   client.subscribe("esp32/humedad_amb");
   client.subscribe("esp32/temperatura");
   client.subscribe("esp32/luz");
+  client.subscribe("esp32/luz_exterior");
 
   client.subscribe("esp32/bomba_estado");
   client.subscribe("esp32/ventilador_estado");
@@ -133,6 +136,10 @@ client.on("message", (topic, message) => {
     tLuz = now;
   }
 
+  if (topic === "esp32/luz_exterior") {
+    luzExterior = data;
+    tLuzExterior = now;
+  }
   // BUFFER
   if (
     humedadSuelo !== "--" &&
@@ -144,7 +151,8 @@ client.on("message", (topic, message) => {
       suelo: parseInt(humedadSuelo),
       aire: parseFloat(humedadAire),
       temperatura: parseFloat(temperatura),
-      luz: parseInt(luz)
+      luz: parseInt(luz),
+      luz_exterior: parseInt(luzExterior)
     });
   }
 
@@ -169,13 +177,14 @@ setInterval(async () => {
 
   if (buffer.length === 0) return;
 
-  let suma = { suelo: 0, aire: 0, temperatura: 0, luz: 0 };
+  let suma = { suelo: 0, aire: 0, temperatura: 0, luz: 0, luz_exterior: 0 };
 
   buffer.forEach(d => {
     suma.suelo += d.suelo;
     suma.aire += d.aire;
     suma.temperatura += d.temperatura;
     suma.luz += d.luz;
+    suma.luz_exterior += d.luz_exterior;
   });
 
   const n = buffer.length;
@@ -184,7 +193,8 @@ setInterval(async () => {
     suelo: Math.round(suma.suelo / n),
     aire: parseFloat((suma.aire / n).toFixed(1)),
     temperatura: parseFloat((suma.temperatura / n).toFixed(1)),
-    luz: Math.round(suma.luz / n)
+    luz: Math.round(suma.luz / n),
+    luz_exterior: Math.round(suma.luz_exterior / n)
   };
 
   const { error } = await supabase
@@ -209,6 +219,7 @@ function verificarTimeouts() {
   if (now - tAire > 10000) humedadAire = "--";
   if (now - tTemp > 10000) temperatura = "--";
   if (now - tLuz > 10000) luz = "--";
+  if (now - tLuzExterior > 10000) luzExterior = "--";
 
   if (now - tBomba > 10000) estadoReal.bomba = "--";
   if (now - tVentilador > 10000) estadoReal.ventilador = "--";
@@ -224,6 +235,7 @@ app.get("/datos", (req, res) => {
     aire: humedadAire,
     temp: temperatura,
     luz: luz,
+    luzExterior: luzExterior,
     actuadores: estadoReal
   });
 });
