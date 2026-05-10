@@ -152,7 +152,6 @@ client.on("message", (topic, message) => {
       aire: parseFloat(humedadAire),
       temperatura: parseFloat(temperatura),
       luz: parseInt(luz),
-      luz_exterior: parseInt(luzExterior)
     });
   }
 
@@ -177,14 +176,13 @@ setInterval(async () => {
 
   if (buffer.length === 0) return;
 
-  let suma = { suelo: 0, aire: 0, temperatura: 0, luz: 0, luz_exterior: 0 };
+  let suma = { suelo: 0, aire: 0, temperatura: 0, luz: 0 };
 
   buffer.forEach(d => {
     suma.suelo += d.suelo;
     suma.aire += d.aire;
     suma.temperatura += d.temperatura;
     suma.luz += d.luz;
-    suma.luz_exterior += d.luz_exterior;
   });
 
   const n = buffer.length;
@@ -194,7 +192,6 @@ setInterval(async () => {
     aire: parseFloat((suma.aire / n).toFixed(1)),
     temperatura: parseFloat((suma.temperatura / n).toFixed(1)),
     luz: Math.round(suma.luz / n),
-    luz_exterior: Math.round(suma.luz_exterior / n)
   };
 
   const { error } = await supabase
