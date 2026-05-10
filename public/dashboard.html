@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>INVERNADERO</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(to right, #d9e8a1, #a8d5ba);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.titulo {
+  font-size: 40px;
+  margin: 20px;
+  font-weight: bold;
+  color: #2c5530;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.imagen {
+  width: 220px;
+  height: 130px;
+  border: 2px solid #4CAF50;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(45deg, #e8f5e8, #d4edda);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  transition: transform 0.3s ease;
+}
+
+.imagen:hover {
+  transform: scale(1.02);
+}
+
+#canvas3D {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+/*Fecha */
+.fecha {
+  margin: 10px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+
+/*Sensores */
+.contenedor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.card {
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-weight: bold;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card span {
+  display: inline; 
+  color: #2c5530;
+  font-size: 24px;
+}
+
+/* 🔴 ERROR VISUAL */
+.card.desconectado {
+  background: linear-gradient(145deg, #ffebee, #ffcdd2);
+  border: 2px solid #f44336;
+  animation: pulsoRojo 2s infinite, shake 0.5s infinite;
+
+}
+
+.card.desconectado span {
+  color: red;
+}
+
+@keyframes pulsoRojo {
+  0%,100% { box-shadow: 0 0 15px rgba(244,67,54,0.3); }
+  50% { box-shadow: 0 0 25px rgba(244,67,54,0.6); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+.estado {
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 12px 20px;
+  border-radius: 25px;
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  top: -5px;
+  transform: translateX(59%);
+
+}
+
+.estado.desconectado {
+  background: #ffcdd2;
+  animation: pulsoRojo 2s infinite;
+}
+
+.botones {
+  position: fixed;
+  bottom: 15px;
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+}
+
+button {
+  padding: 15px 25px;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  background: linear-gradient(145deg, #8a8f70, #6b7a4f);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+button.activo {
+  background: linear-gradient(145deg, #4caf50, #45a049);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.panel-colores {
+  position: fixed;
+  bottom: 90px;
+  display: none;
+  background: rgba(255,255,255,0.95);
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  gap: 10px;
+  z-index: 1000;
+}
+
+.panel-colores button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.estadoLuzExterior{
+  background: rgba(255,255,255,0.9);
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-weight: bold;
+  font-size: 15px;
+  color: #2c5530;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+
+.estadoLuzExterior.desconectado{
+  background: #ffcdd2;
+  color: red;
+  border: 2px solid #f44336;
+  animation: pulsoRojo 2s infinite, shake 0.5s infinite;
+}
+
+.estadoLuzExterior.noche{
+  background: linear-gradient(145deg, #1e3c72, #2a5298);
+  color: white;
+}
+
+.estadoLuzExterior.medio{
+  background: linear-gradient(145deg, #ffcc80, #ffb74d);
+  color: #5d4037;
+}
+
+.estadoLuzExterior.dia{
+  background: linear-gradient(145deg, #fff176, #fdd835);
+  color: #5d4037;
+}
+</style>
+
+</head>
+<body>
+
+<div class="titulo">INVERNADERO</div>
+
+<div style="
+  position:absolute;
+  top:15px;
+  right:15px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+">
+
+  <!-- ESTADO LUZ EXTERIOR -->
+  <div class="estadoLuzExterior" id="estadoLuzExterior">
+    ☀️ <span id="textoLuzExterior">--</span>
+  </div>
+
+  <!-- BOTÓN GRÁFICAS -->
+  <button onclick="irGraficas()" id="btnGraficas" style="
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:16px;
+    padding:12px 18px;
+    border-radius:12px;
+    border:none;
+    cursor:pointer;
+    background: linear-gradient(145deg, #4CAF50, #388e3c);
+    color:white;
+    font-weight:bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  ">
+    📈 Gráficas ➡️
+  </button>
+
+</div>
+
+<div class="imagen">
+  <canvas id="canvas3D"></canvas>
+</div>
+
+<div class="fecha" id="fecha"></div>
+
+<div class="contenedor">
+  <div class="card" id="cardSuelo">
+    🌱 Suelo: <span id="suelo">--</span> %
+  </div>
+  <div class="card" id="cardLuz">
+    💡 Luz: <span id="luz">--</span> %
+  </div>
+  <div class="card" id="cardAire">
+    💧 Aire: <span id="aire">--</span> %
+  </div>
+  <div class="card" id="cardTemp">
+    🌡️ Temp: <span id="temp">--</span> °C
+  </div>
+
+<div class="estado" id="estadoServidor">🔴 Conectando...</div>
+
+<div class="botones">
+  <button onclick="toggle('bomba')" id="btnBomba">Bomba OFF</button>
+  <button onclick="toggle('ventilador')" id="btnVent">Ventilador OFF</button>
+  <button onclick="toggle('led')" id="btnLuz">Luces OFF</button>
+  <button onclick="irCamara()" id="btnCamara">Camara</button>
+</div>
+
+<div id="panelColores" class="panel-colores">
+  <button onclick="setColor(255,0,0)" style="background:red;"></button>
+  <button onclick="setColor(0,255,0)" style="background:green;"></button>
+  <button onclick="setColor(0,0,255)" style="background:blue;"></button>
+  <button onclick="setColor(255,255,255)" style="background:white; border:1px solid #ccc;"></button>
+  <button onclick="setColor(255,0,255)" style="background:purple;"></button>
+  <button onclick="setColor(0,0,0)" style="background:rgb(0, 0, 0);"></button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+<script>
+const canvas = document.getElementById("canvas3D");
+
+let estadoColorLed = 0;
+
+const rect = canvas.getBoundingClientRect();
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, rect.width / rect.height, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  alpha: true,
+  antialias: true
+});
+renderer.setSize(rect.width, rect.height);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+// Luces mejoradas
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(2, 2, 5);
+light.castShadow = true;
+scene.add(light);
+
+const ambient = new THREE.AmbientLight(0x404040, 0.6);
+scene.add(ambient);
+
+// Modelo 3D
+let modelo;
+const loader = new THREE.GLTFLoader();
+loader.load("/model/invernadero.glb", 
+  (gltf) => {
+    modelo = gltf.scene;
+    modelo.scale.set(0.5, 0.5, 0.5);
+    modelo.traverse((child) => {
+      if (child.isMesh) child.castShadow = true;
+    });
+    scene.add(modelo);
+    console.log("Modelo 3D cargado!");
+  },
+  undefined,
+  (error) => {
+    console.log("Usando modelo de respaldo (cubo verde)");
+    // Cubo de respaldo súper realista
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshLambertMaterial({ 
+      color: 0x4CAF50,
+      transparent: true,
+      opacity: 0.9
+    });
+    modelo = new THREE.Mesh(geometry, material);
+    modelo.castShadow = true;
+    scene.add(modelo);
+  }
+);
+
+camera.position.z = 3;
+
+//Resize automático PERFECTO
+const resizeObserver = new ResizeObserver(() => {
+  const rect = canvas.getBoundingClientRect();
+  camera.aspect = rect.width / rect.height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(rect.width, rect.height);
+});
+resizeObserver.observe(canvas);
+
+// Animación suave
+function animate() {
+  requestAnimationFrame(animate);
+  if (modelo) {
+    modelo.rotation.y += 0.01;
+    modelo.rotation.x = Math.sin(Date.now() * 0.001) * 0.1;
+  }
+  renderer.render(scene, camera);
+}
+animate();
+//Fecha en tiempo real
+setInterval(() => {
+  document.getElementById("fecha").innerText =
+    new Date().toLocaleString();
+}, 1000);
+
+//Sistema visual errores
+function actualizarEstadoVisual(cardId, valor){
+  const card = document.getElementById(cardId);
+  const span = card.querySelector("span");
+
+  if(valor === "--" || valor == null){
+    card.classList.add("desconectado");
+    span.innerText = "--";
+  }else{
+    card.classList.remove("desconectado");
+    span.innerText = valor;
+  }
+}
+function actualizarLuzExterior(valor){
+
+  const box = document.getElementById("estadoLuzExterior");
+  const texto = document.getElementById("textoLuzExterior");
+
+  box.classList.remove("desconectado","noche","medio","dia");
+
+  if(valor === "--" || valor == null){
+
+    texto.innerText = "--";
+    box.classList.add("desconectado");
+    return;
+  }
+
+  texto.innerText = valor;
+
+  if(valor === "NOCHE"){
+    box.classList.add("noche");
+  }
+  else if(valor === "MEDIO"){
+    box.classList.add("medio");
+  }
+  else if(valor === "DIA"){
+    box.classList.add("dia");
+  }
+}
+
+function irCamara() {
+  const btn = document.getElementById("btnCamara");
+  btn.classList.add("activo");
+
+  setTimeout(() => {
+    window.location.href = "/camara.html";
+  }, 150);
+}
+//sensores
+setInterval(()=>{
+  fetch("/datos")
+  .then(r=>r.json())
+  .then(data=>{
+    actualizarEstadoVisual("cardSuelo", data.suelo);
+    actualizarEstadoVisual("cardLuz", data.luz);
+    actualizarLuzExterior(data.luzExterior);
+    actualizarEstadoVisual("cardAire", data.aire);
+    actualizarEstadoVisual("cardTemp", data.temp);
+  })
+  .catch(()=>{
+    actualizarEstadoVisual("cardSuelo","--");
+    actualizarEstadoVisual("cardLuz","--");
+    actualizarLuzExterior("--");
+    actualizarEstadoVisual("cardAire","--");
+    actualizarEstadoVisual("cardTemp","--");
+  });
+},2000);
+
+// 🔘 botones
+function toggle(d){
+
+  if(d === "led"){
+
+    fetch("/led",{method:"POST"})
+    const panel = document.getElementById("panelColores");
+
+    // Mostrar u ocultar panel
+    panel.style.display = 
+      panel.style.display === "flex" ? "none" : "flex";
+
+    return; 
+  }
+
+  fetch("/"+d,{method:"POST"})
+  .then(r=>r.json())
+  .then(data=>actualizarBoton(d,data.estado));
+}
+
+function actualizarBoton(d,e){
+  const btn = document.getElementById(
+    d==="bomba"?"btnBomba":
+    d==="ventilador"?"btnVent":"btnLuz"
+  );
+  btn.innerText = d+" "+e;
+  btn.classList.toggle("activo", e==="ON");
+}
+
+function setColor(r,g,b){
+
+  fetch("/color",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({r,g,b})
+  });
+
+  const btn = document.getElementById("btnLuz");
+
+  btn.style.color = "white";
+
+  if(r==255 && g==0 && b==0){
+    btn.style.background = "red";
+    btn.innerText = "Luces ROJO";
+  }
+  else if(r==0 && g==255 && b==0){
+    btn.style.background = "green";
+    btn.innerText = "Luces VERDE";
+  }
+  else if(r==0 && g==0 && b==255){
+    btn.style.background = "blue";
+    btn.innerText = "Luces AZUL";
+  }
+  else if(r==255 && g==255 && b==255){
+    btn.style.background = "white";
+    btn.style.color = "black";
+    btn.innerText = "Luces BLANCO";
+  }
+  else if(r==255 && g==0 && b==255){
+    btn.style.background = "purple";
+    btn.innerText = "Luces MORADO";
+  }
+  else if(r==0 && g==0 && b==0){
+    btn.style.background = "";
+    btn.style.color = "white";
+    btn.innerText = "Luces OFF";
+  }
+
+  // opcional: cerrar panel después de elegir
+  document.getElementById("panelColores").style.display = "none";
+}
+
+function irGraficas() {
+  window.location.href = "/graficas.html";
+}
+
+//estado servidor
+setInterval(()=>{
+  fetch("/estado")
+  .then(r=>r.json())
+  .then(data=>{
+    const est = document.getElementById("estadoServidor");
+
+    if(data.esp32){
+      est.innerText = "🟢 Servidor conectado";
+      est.classList.remove("desconectado");
+    }else{
+      est.innerText = "🔴 ESP32 desconectado";
+      est.classList.add("desconectado");
+    }
+
+    actualizarBoton("bomba", data.dispositivos.bomba?"ON":"OFF");
+    actualizarBoton("ventilador", data.dispositivos.ventilador?"ON":"OFF");
+  })
+  .catch(()=>{
+    estadoServidor.innerText="🔴 Sin conexión";
+    estadoServidor.classList.add("desconectado");
+  });
+},2000);
+
+</script>
+
+</body>
+</html>

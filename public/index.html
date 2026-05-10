@@ -2,560 +2,427 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>INVERNADERO</title>
+<title>SISTEMA DE MONITOREO Y CONTROL AGROAMBIENTAL</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(to right, #d9e8a1, #a8d5ba);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
+body{
+  margin:0;
+  font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background:
+  linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+  url('https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?q=80&w=1200');
+  background-size:cover;
+  background-position:center;
+  background-attachment:fixed;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  padding:20px;
+  overflow-x:hidden;
 }
 
-.titulo {
-  font-size: 40px;
-  margin: 20px;
-  font-weight: bold;
-  color: #2c5530;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+.container-main{
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(15px);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:30px;
+  width:95%;
+  max-width:900px;
+  max-height:90vh;
+  overflow-y:auto;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  position:relative;
+  padding:60px 50px 50px;
 }
 
-.imagen {
-  width: 220px;
-  height: 130px;
-  border: 2px solid #4CAF50;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(45deg, #e8f5e8, #d4edda);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  transition: transform 0.3s ease;
+.logo-uni{
+  position:absolute;
+  top:20px;
+  left:20px;
+  width:90px;
+  height:90px;
+  border-radius:20px;
+  object-fit:contain;
+  background:rgba(255,255,255,0.2);
+  padding:15px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 8px 25px rgba(0,0,0,0.3);
 }
 
-.imagen:hover {
-  transform: scale(1.02);
+.foto-equipo{
+  position:absolute;
+  top:-80px;
+  left:50%;
+  transform:translateX(-50%);
+  width:160px;
+  height:160px;
+  border-radius:50%;
+  object-fit:cover;
+  border:5px solid rgba(255,255,255,0.4);
+  box-shadow:0 20px 50px rgba(0,0,0,0.6);
+  z-index:20;
 }
 
-#canvas3D {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover;
-  display: block;
-  border-radius: 10px;
+.titulo-proyecto{
+  font-size:32px;
+  margin:30px 0 15px 0;
+  background:linear-gradient(45deg, #c5e1a5, #a5d6a7, #81c784);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:0 0 30px rgba(197,225,165,0.5);
+  font-weight:700;
+  letter-spacing:-1px;
+  line-height:1.2;
 }
 
-/*Fecha */
-.fecha {
-  margin: 10px;
-  font-size: 14px;
-  color: #555;
-  font-weight: 500;
+h1{
+  font-size:65px;
+  margin:0 0 20px 0;
+  background:linear-gradient(45deg, #4CAF50, #66BB6A, #81C784);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:0 0 40px rgba(76,175,80,0.6);
+  font-weight:900;
+  letter-spacing:-3px;
 }
 
-/*Sensores */
-.contenedor {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 10px;
-  max-width: 500px;
-  width: 100%;
+.sub{
+  font-size:26px;
+  margin-bottom:50px;
+  color:#e8f5e8;
+  font-weight:300;
+  text-shadow:0 2px 10px rgba(0,0,0,0.5);
 }
 
-.card {
-  background: linear-gradient(145deg, #ffffff, #f0f0f0);
-  padding: 20px;
-  border-radius: 16px;
-  text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  font-weight: bold;
-  font-size: 16px;
-  transition: transform 0.2s;
+.section{
+  margin:40px 0;
+  text-align:left;
+  background:rgba(255,255,255,0.08);
+  padding:30px;
+  border-radius:25px;
+  border-left:5px solid #4CAF50;
+  backdrop-filter:blur(12px);
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
 
-.card:hover {
-  transform: translateY(-2px);
+.section h2{
+  color:#c5e1a5;
+  margin:0 0 25px 0;
+  font-size:30px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  font-weight:600;
 }
 
-.card span {
-  display: inline; 
-  color: #2c5530;
-  font-size: 24px;
+.section p{
+  line-height:1.9;
+  font-size:18px;
+  color:#f1f8e9;
+  margin:0;
 }
 
-/* 🔴 ERROR VISUAL */
-.card.desconectado {
-  background: linear-gradient(145deg, #ffebee, #ffcdd2);
-  border: 2px solid #f44336;
-  animation: pulsoRojo 2s infinite, shake 0.5s infinite;
-
+.materials-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+  gap:25px;
+  margin-top:25px;
 }
 
-.card.desconectado span {
-  color: red;
+.materials-list{
+  background:rgba(255,255,255,0.1);
+  padding:25px;
+  border-radius:20px;
+  text-align:left;
+  border:1px solid rgba(255,255,255,0.1);
+  transition:0.3s;
 }
 
-@keyframes pulsoRojo {
-  0%,100% { box-shadow: 0 0 15px rgba(244,67,54,0.3); }
-  50% { box-shadow: 0 0 25px rgba(244,67,54,0.6); }
+.materials-list:hover{
+  transform:translateY(-5px);
+  background:rgba(255,255,255,0.15);
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-2px); }
-  40% { transform: translateX(2px); }
-  60% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
+.materials-list h3{
+  color:#a5d6a7;
+  margin:0 0 20px 0;
+  font-size:22px;
 }
 
-.estado {
-  margin-top: 20px;
-  font-weight: bold;
-  font-size: 16px;
-  padding: 12px 20px;
-  border-radius: 25px;
-  background: rgba(255,255,255,0.8);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  top: -5px;
-  transform: translateX(59%);
-
+.materials-list ul{
+  list-style:none;
+  padding:0;
+  margin:0;
 }
 
-.estado.desconectado {
-  background: #ffcdd2;
-  animation: pulsoRojo 2s infinite;
+.materials-list li{
+  padding:12px 0;
+  color:#e8f5e8;
+  position:relative;
+  padding-left:35px;
+  font-size:16px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
-.botones {
-  position: fixed;
-  bottom: 15px;
-  display: flex;
-  gap: 15px;
-  padding: 20px;
+.materials-list li:last-child{
+  border-bottom:none;
 }
 
-button {
-  padding: 15px 25px;
-  border-radius: 25px;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 14px;
-  background: linear-gradient(145deg, #8a8f70, #6b7a4f);
-  color: white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
+.materials-list li::before{
+  content:"🌿";
+  position:absolute;
+  left:0;
+  font-size:20px;
 }
 
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+.funcionamiento-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+  gap:20px;
+  margin:25px 0;
 }
 
-button.activo {
-  background: linear-gradient(145deg, #4caf50, #45a049);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+.funcionamiento-card{
+  background:linear-gradient(135deg, rgba(76,175,80,0.25), rgba(129,199,132,0.25));
+  border:2px solid rgba(76,175,80,0.4);
+  padding:25px;
+  border-radius:20px;
+  text-align:center;
+  transition:0.3s;
 }
 
-.panel-colores {
-  position: fixed;
-  bottom: 90px;
-  display: none;
-  background: rgba(255,255,255,0.95);
-  padding: 10px;
-  border-radius: 15px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  gap: 10px;
-  z-index: 1000;
+.funcionamiento-card:hover{
+  transform:scale(1.02);
+  box-shadow:0 15px 40px rgba(76,175,80,0.3);
 }
 
-.panel-colores button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.funcionamiento-card h3{
+  color:#4CAF50;
+  margin:0 0 15px 0;
+  font-size:24px;
 }
 
-.estadoLuzExterior{
-  background: rgba(255,255,255,0.9);
-  padding: 12px 18px;
-  border-radius: 14px;
-  font-weight: bold;
-  font-size: 15px;
-  color: #2c5530;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
+.funcionamiento-card p{
+  font-size:18px;
+  margin:10px 0;
+  font-weight:600;
+  color:#2e7d32;
 }
 
-.estadoLuzExterior.desconectado{
-  background: #ffcdd2;
-  color: red;
-  border: 2px solid #f44336;
-  animation: pulsoRojo 2s infinite, shake 0.5s infinite;
+.equipo-complete{
+  background:linear-gradient(135deg, rgba(76,175,80,0.35), rgba(165,214,167,0.35));
+  border:3px solid rgba(76,175,80,0.6);
+  padding:35px;
+  border-radius:25px;
+  margin:30px 0;
 }
 
-.estadoLuzExterior.noche{
-  background: linear-gradient(145deg, #1e3c72, #2a5298);
-  color: white;
+.equipo-complete h3{
+  color:#2e7d32;
+  margin:0 0 25px 0;
+  font-size:26px;
+  text-align:center;
 }
 
-.estadoLuzExterior.medio{
-  background: linear-gradient(145deg, #ffcc80, #ffb74d);
-  color: #5d4037;
+.nombre-equipo{
+  font-size:20px;
+  font-weight:700;
+  color:#1b5e20;
+  margin:12px 0;
+  padding:12px 20px;
+  background:rgba(255,255,255,0.2);
+  border-radius:15px;
+  display:inline-block;
+  backdrop-filter:blur(10px);
 }
 
-.estadoLuzExterior.dia{
-  background: linear-gradient(145deg, #fff176, #fdd835);
-  color: #5d4037;
+button{
+  margin-top:50px;
+  padding:22px 55px;
+  border:none;
+  border-radius:30px;
+  font-size:22px;
+  font-weight:800;
+  background:linear-gradient(45deg, #4CAF50, #45a049, #2e7d32);
+  color:white;
+  cursor:pointer;
+  transition:all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow:0 15px 40px rgba(76,175,80,0.5);
+  text-transform:uppercase;
+  letter-spacing:2px;
+  position:relative;
+  overflow:hidden;
+}
+
+button::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition:0.5s;
+}
+
+button:hover::before{
+  left:100%;
+}
+
+button:hover{
+  transform:translateY(-5px) scale(1.05);
+  box-shadow:0 25px 60px rgba(76,175,80,0.7);
+}
+
+@media (max-width:768px){
+  .container-main{
+    width:98%;
+    padding:50px 25px 40px;
+    margin:10px;
+  }
+  
+  h1{
+    font-size:50px;
+  }
+  
+  .titulo-proyecto{
+    font-size:28px;
+  }
+  
+  .foto-equipo{
+    width:140px;
+    height:140px;
+    top:-70px;
+  }
 }
 </style>
-
 </head>
 <body>
 
-<div class="titulo">INVERNADERO</div>
+<div class="container-main">
+  <!-- Logo Universidad - esquina superior izquierda -->
+  <img src="/img/logo.png" alt="Logo Universidad" class="logo-uni">
+  
+  <!-- Foto equipo GRANDE y CENTRADA -->
+  <img src="/img/Equipo.jpeg" alt="Equipo SMCA" class="foto-equipo">
 
-<div style="
-  position:absolute;
-  top:15px;
-  right:15px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-">
-
-  <!-- ESTADO LUZ EXTERIOR -->
-  <div class="estadoLuzExterior" id="estadoLuzExterior">
-    ☀️ <span id="textoLuzExterior">--</span>
+  <h1>SMCA</h1>
+  
+  <div class="titulo-proyecto">
+    SISTEMA DE MONITOREO Y CONTROL AGROAMBIENTAL
   </div>
 
-  <!-- BOTÓN GRÁFICAS -->
-  <button onclick="irGraficas()" id="btnGraficas" style="
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:16px;
-    padding:12px 18px;
-    border-radius:12px;
-    border:none;
-    cursor:pointer;
-    background: linear-gradient(145deg, #4CAF50, #388e3c);
-    color:white;
-    font-weight:bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  ">
-    📈 Gráficas ➡️
+  <div class="sub">
+    Invernadero Inteligente IoT
+  </div>
+
+  <div class="section">
+    <h2>🎯 Objetivo</h2>
+    <p>
+      Diseñar y construir un invernadero automatizado que permita controlar 
+      variables ambientales como la <strong>temperatura</strong>, la <strong>humedad</strong> 
+      y la <strong>iluminación</strong>, con el fin de optimizar el crecimiento de las 
+      plantas y mejorar la producción en un entorno educativo y sostenible.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>🔧 Metodología</h2>
+    <p>
+      Se diseñó el sistema definiendo las variables a controlar y el esquema del 
+      invernadero. Se construyó la estructura física y se instaló el sistema 
+      electrónico con <strong>sensores y actuadores</strong> conectados a un 
+      <strong>microcontrolador ESP32 DFRobot</strong>. Se programó la automatización 
+      completa y se realizaron pruebas exhaustivas para optimizar el funcionamiento.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>📋 Materiales</h2>
+    
+    <div class="materials-grid">
+      <div class="materials-list">
+        <h3>🏗️ Estructura Física</h3>
+        <ul>
+          <li>Tubos de PVC</li>
+          <li>Palos de balso</li>
+          <li>Plástico transparente (polietileno)</li>
+          <li>Cable de acero galvanizado</li>
+        </ul>
+      </div>
+      
+      <div class="materials-list">
+        <h3>⚡ Sistema Electrónico</h3>
+        <ul>
+          <li>Microcontrolador ESP32 DFRobot</li>
+          <li>Sensor temperatura y humedad</li>
+          <li>Sensor de humedad del suelo</li>
+          <li>Módulo relé</li>
+          <li>Cables y protoboard</li>
+        </ul>
+      </div>
+      
+      <div class="materials-list">
+        <h3>🎮 Actuadores</h3>
+        <ul>
+          <li>Bomba de agua</li>
+          <li>Ventilador</li>
+          <li>Luces LED grow</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🤖 Funcionamiento Automático</h2>
+    <p>
+      <strong>Sistema inteligente IoT</strong> que monitorea constantemente y actúa automáticamente:
+    </p>
+    
+    <div class="funcionamiento-grid">
+      <div class="funcionamiento-card">
+        <h3>🌡️ Temperatura Alta</h3>
+        <p>→ <strong>VENTILADOR ON</strong></p>
+      </div>
+      <div class="funcionamiento-card">
+        <h3>💧 Suelo Seco</h3>
+        <p>→ <strong>BOMBA DE RIEGO ON</strong></p>
+      </div>
+      <div class="funcionamiento-card">
+        <h3>💡 Baja Luminosidad</h3>
+        <p>→ <strong>LEDs GROW ON</strong></p>
+      </div>
+    </div>
+    
+    <p style="margin-top:30px; font-style:italic; color:#dcedc8; font-size:18px;">
+      ✨ <strong>Control total vía app IoT</strong> + Mantenimiento autónomo 24/7
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="equipo-complete">
+      <h3>👨‍💻 Desarrollado por</h3>
+      <div class="nombre-equipo">Miguel Angel Bohorquez Hernandez</div>
+      <div class="nombre-equipo">Andres Felipe Joya Ruiz</div>
+      <div class="nombre-equipo">Santiago Alejandro Maldonado Barrera</div>
+    </div>
+  </div>
+
+  <button onclick="entrar()">
+    🚀 Acceder al Dashboard
   </button>
-
 </div>
-
-<div class="imagen">
-  <canvas id="canvas3D"></canvas>
-</div>
-
-<div class="fecha" id="fecha"></div>
-
-<div class="contenedor">
-  <div class="card" id="cardSuelo">
-    🌱 Suelo: <span id="suelo">--</span> %
-  </div>
-  <div class="card" id="cardLuz">
-    💡 Luz: <span id="luz">--</span> %
-  </div>
-  <div class="card" id="cardAire">
-    💧 Aire: <span id="aire">--</span> %
-  </div>
-  <div class="card" id="cardTemp">
-    🌡️ Temp: <span id="temp">--</span> °C
-  </div>
-
-<div class="estado" id="estadoServidor">🔴 Conectando...</div>
-
-<div class="botones">
-  <button onclick="toggle('bomba')" id="btnBomba">Bomba OFF</button>
-  <button onclick="toggle('ventilador')" id="btnVent">Ventilador OFF</button>
-  <button onclick="toggle('led')" id="btnLuz">Luces OFF</button>
-  <button onclick="irCamara()" id="btnCamara">Camara</button>
-</div>
-
-<div id="panelColores" class="panel-colores">
-  <button onclick="setColor(255,0,0)" style="background:red;"></button>
-  <button onclick="setColor(0,255,0)" style="background:green;"></button>
-  <button onclick="setColor(0,0,255)" style="background:blue;"></button>
-  <button onclick="setColor(255,255,255)" style="background:white; border:1px solid #ccc;"></button>
-  <button onclick="setColor(255,0,255)" style="background:purple;"></button>
-  <button onclick="setColor(0,0,0)" style="background:rgb(0, 0, 0);"></button>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
 <script>
-const canvas = document.getElementById("canvas3D");
-
-let estadoColorLed = 0;
-
-const rect = canvas.getBoundingClientRect();
-
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, rect.width / rect.height, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-  alpha: true,
-  antialias: true
-});
-renderer.setSize(rect.width, rect.height);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-// Luces mejoradas
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(2, 2, 5);
-light.castShadow = true;
-scene.add(light);
-
-const ambient = new THREE.AmbientLight(0x404040, 0.6);
-scene.add(ambient);
-
-// Modelo 3D
-let modelo;
-const loader = new THREE.GLTFLoader();
-loader.load("/model/invernadero.glb", 
-  (gltf) => {
-    modelo = gltf.scene;
-    modelo.scale.set(0.5, 0.5, 0.5);
-    modelo.traverse((child) => {
-      if (child.isMesh) child.castShadow = true;
-    });
-    scene.add(modelo);
-    console.log("Modelo 3D cargado!");
-  },
-  undefined,
-  (error) => {
-    console.log("Usando modelo de respaldo (cubo verde)");
-    // Cubo de respaldo súper realista
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshLambertMaterial({ 
-      color: 0x4CAF50,
-      transparent: true,
-      opacity: 0.9
-    });
-    modelo = new THREE.Mesh(geometry, material);
-    modelo.castShadow = true;
-    scene.add(modelo);
-  }
-);
-
-camera.position.z = 3;
-
-//Resize automático PERFECTO
-const resizeObserver = new ResizeObserver(() => {
-  const rect = canvas.getBoundingClientRect();
-  camera.aspect = rect.width / rect.height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(rect.width, rect.height);
-});
-resizeObserver.observe(canvas);
-
-// Animación suave
-function animate() {
-  requestAnimationFrame(animate);
-  if (modelo) {
-    modelo.rotation.y += 0.01;
-    modelo.rotation.x = Math.sin(Date.now() * 0.001) * 0.1;
-  }
-  renderer.render(scene, camera);
+function entrar(){
+  window.location.href = "/dashboard.html";
 }
-animate();
-//Fecha en tiempo real
-setInterval(() => {
-  document.getElementById("fecha").innerText =
-    new Date().toLocaleString();
-}, 1000);
-
-//Sistema visual errores
-function actualizarEstadoVisual(cardId, valor){
-  const card = document.getElementById(cardId);
-  const span = card.querySelector("span");
-
-  if(valor === "--" || valor == null){
-    card.classList.add("desconectado");
-    span.innerText = "--";
-  }else{
-    card.classList.remove("desconectado");
-    span.innerText = valor;
-  }
-}
-function actualizarLuzExterior(valor){
-
-  const box = document.getElementById("estadoLuzExterior");
-  const texto = document.getElementById("textoLuzExterior");
-
-  box.classList.remove("desconectado","noche","medio","dia");
-
-  if(valor === "--" || valor == null){
-
-    texto.innerText = "--";
-    box.classList.add("desconectado");
-    return;
-  }
-
-  texto.innerText = valor;
-
-  if(valor === "NOCHE"){
-    box.classList.add("noche");
-  }
-  else if(valor === "MEDIO"){
-    box.classList.add("medio");
-  }
-  else if(valor === "DIA"){
-    box.classList.add("dia");
-  }
-}
-
-function irCamara() {
-  const btn = document.getElementById("btnCamara");
-  btn.classList.add("activo");
-
-  setTimeout(() => {
-    window.location.href = "/camara.html";
-  }, 150);
-}
-//sensores
-setInterval(()=>{
-  fetch("/datos")
-  .then(r=>r.json())
-  .then(data=>{
-    actualizarEstadoVisual("cardSuelo", data.suelo);
-    actualizarEstadoVisual("cardLuz", data.luz);
-    actualizarLuzExterior(data.luzExterior);
-    actualizarEstadoVisual("cardAire", data.aire);
-    actualizarEstadoVisual("cardTemp", data.temp);
-  })
-  .catch(()=>{
-    actualizarEstadoVisual("cardSuelo","--");
-    actualizarEstadoVisual("cardLuz","--");
-    actualizarLuzExterior("--");
-    actualizarEstadoVisual("cardAire","--");
-    actualizarEstadoVisual("cardTemp","--");
-  });
-},2000);
-
-// 🔘 botones
-function toggle(d){
-
-  if(d === "led"){
-
-    fetch("/led",{method:"POST"})
-    const panel = document.getElementById("panelColores");
-
-    // Mostrar u ocultar panel
-    panel.style.display = 
-      panel.style.display === "flex" ? "none" : "flex";
-
-    return; 
-  }
-
-  fetch("/"+d,{method:"POST"})
-  .then(r=>r.json())
-  .then(data=>actualizarBoton(d,data.estado));
-}
-
-function actualizarBoton(d,e){
-  const btn = document.getElementById(
-    d==="bomba"?"btnBomba":
-    d==="ventilador"?"btnVent":"btnLuz"
-  );
-  btn.innerText = d+" "+e;
-  btn.classList.toggle("activo", e==="ON");
-}
-
-function setColor(r,g,b){
-
-  fetch("/color",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({r,g,b})
-  });
-
-  const btn = document.getElementById("btnLuz");
-
-  btn.style.color = "white";
-
-  if(r==255 && g==0 && b==0){
-    btn.style.background = "red";
-    btn.innerText = "Luces ROJO";
-  }
-  else if(r==0 && g==255 && b==0){
-    btn.style.background = "green";
-    btn.innerText = "Luces VERDE";
-  }
-  else if(r==0 && g==0 && b==255){
-    btn.style.background = "blue";
-    btn.innerText = "Luces AZUL";
-  }
-  else if(r==255 && g==255 && b==255){
-    btn.style.background = "white";
-    btn.style.color = "black";
-    btn.innerText = "Luces BLANCO";
-  }
-  else if(r==255 && g==0 && b==255){
-    btn.style.background = "purple";
-    btn.innerText = "Luces MORADO";
-  }
-  else if(r==0 && g==0 && b==0){
-    btn.style.background = "";
-    btn.style.color = "white";
-    btn.innerText = "Luces OFF";
-  }
-
-  // opcional: cerrar panel después de elegir
-  document.getElementById("panelColores").style.display = "none";
-}
-
-function irGraficas() {
-  window.location.href = "/graficas.html";
-}
-
-//estado servidor
-setInterval(()=>{
-  fetch("/estado")
-  .then(r=>r.json())
-  .then(data=>{
-    const est = document.getElementById("estadoServidor");
-
-    if(data.esp32){
-      est.innerText = "🟢 Servidor conectado";
-      est.classList.remove("desconectado");
-    }else{
-      est.innerText = "🔴 ESP32 desconectado";
-      est.classList.add("desconectado");
-    }
-
-    actualizarBoton("bomba", data.dispositivos.bomba?"ON":"OFF");
-    actualizarBoton("ventilador", data.dispositivos.ventilador?"ON":"OFF");
-  })
-  .catch(()=>{
-    estadoServidor.innerText="🔴 Sin conexión";
-    estadoServidor.classList.add("desconectado");
-  });
-},2000);
-
 </script>
 
 </body>
