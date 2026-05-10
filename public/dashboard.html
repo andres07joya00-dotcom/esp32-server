@@ -233,6 +233,34 @@ button.activo {
 <div style="
   position:absolute;
   top:15px;
+  left:15px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+">
+
+  <button onclick="irInicio()" id="btnInicio" style="
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:16px;
+    padding:12px 18px;
+    border-radius:12px;
+    border:none;
+    cursor:pointer;
+    background: linear-gradient(145deg, #4CAF50, #388e3c);
+    color:white;
+    font-weight:bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  ">
+    ⬅️ Inicio
+  </button>
+
+</div>
+
+<div style="
+  position:absolute;
+  top:15px;
   right:15px;
   display:flex;
   align-items:center;
@@ -272,13 +300,13 @@ button.activo {
 
 <div class="contenedor">
   <div class="card" id="cardSuelo">
-    🌱 Suelo: <span id="suelo">--</span> %
+    🌱 Hum. Suelo: <span id="suelo">--</span> %
   </div>
   <div class="card" id="cardLuz">
     💡 Luz: <span id="luz">--</span> %
   </div>
   <div class="card" id="cardAire">
-    💧 Aire: <span id="aire">--</span> %
+    💧 Hum. Aire: <span id="aire">--</span> %
   </div>
   <div class="card" id="cardTemp">
     🌡️ Temp: <span id="temp">--</span> °C
@@ -309,6 +337,7 @@ button.activo {
 const canvas = document.getElementById("canvas3D");
 
 let estadoColorLed = 0;
+const PIN_SEGURIDAD = "0712";
 
 const rect = canvas.getBoundingClientRect();
 
@@ -429,12 +458,54 @@ function actualizarLuzExterior(valor){
 }
 
 function irCamara() {
+    if(!verificarPin()){
+    return;
+  }
   const btn = document.getElementById("btnCamara");
   btn.classList.add("activo");
 
   setTimeout(() => {
     window.location.href = "/camara.html";
   }, 150);
+}
+
+function verificarPin(){
+
+  const ahora = Date.now();
+
+  // revisar si ya está desbloqueado
+  const accesoGuardado = localStorage.getItem("accesoInvernadero");
+
+  if(accesoGuardado){
+
+    const tiempoGuardado = parseInt(accesoGuardado);
+
+    // 15 minutos = 900000 ms
+    if((ahora - tiempoGuardado) < 900000){
+      return true;
+    }
+  }
+
+  // pedir PIN
+  const pin = prompt("🔒 Ingrese el PIN de seguridad");
+
+  if(pin === null){
+    return false;
+  }
+
+  if(pin === PIN_SEGURIDAD){
+
+    // guardar tiempo de acceso
+    localStorage.setItem("accesoInvernadero", ahora);
+
+    alert("✅ Acceso concedido por 15 minutos");
+
+    return true;
+  }
+
+  alert("❌ PIN incorrecto");
+
+  return false;
 }
 //sensores
 setInterval(()=>{
@@ -458,6 +529,10 @@ setInterval(()=>{
 
 // 🔘 botones
 function toggle(d){
+
+  if(!verificarPin()){
+    return;
+  }
 
   if(d === "led"){
 
@@ -532,6 +607,9 @@ function irGraficas() {
   window.location.href = "/graficas.html";
 }
 
+function irInicio() {
+  window.location.href = "/";
+}
 //estado servidor
 setInterval(()=>{
   fetch("/estado")
