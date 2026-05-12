@@ -131,7 +131,7 @@ body {
   box-shadow: 0 8px 25px rgba(102, 102, 102, 0.4);
 }
 
-/* Modal Timelapse - Estilo YouTube */
+/* Modal Timelapse - SIMPLE */
 .modal-timelapse {
   display: none;
   position: fixed;
@@ -168,89 +168,6 @@ body {
   background: #000;
 }
 
-.controles-video {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.85));
-  padding: 20px 20px 15px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.btn-video {
-  background: rgba(255,255,255,0.1);
-  border: none;
-  color: white;
-  padding: 10px 14px;
-  border-radius: 50%;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.3s;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-}
-
-.btn-video:hover {
-  background: rgba(255,255,255,0.3);
-  transform: scale(1.1);
-}
-
-.btn-video.reiniciar {
-  font-size: 16px;
-  background: rgba(76,175,80,0.3);
-}
-
-.btn-video.reiniciar:hover {
-  background: rgba(76,175,80,0.5);
-}
-
-#progresoVideo {
-  flex: 1;
-  height: 5px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 2.5px;
-  overflow: hidden;
-  cursor: pointer;
-  margin: 0 12px;
-  position: relative;
-}
-
-#barraProgreso {
-  height: 100%;
-  background: linear-gradient(90deg, #FF6B35, #F7931E);
-  width: 0%;
-  border-radius: 2.5px;
-  transition: width 0.1s linear;
-  position: relative;
-}
-
-#barraProgreso::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 12px;
-  height: 100%;
-  background: rgba(255,255,255,0.5);
-  border-radius: 2.5px;
-}
-
-.tiempo-video {
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  font-family: 'Roboto', Arial, sans-serif;
-  min-width: 80px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-}
-
 .cerrar-modal {
   position: absolute;
   top: 20px;
@@ -268,11 +185,51 @@ body {
   justify-content: center;
   transition: all 0.3s;
   backdrop-filter: blur(10px);
+  z-index: 10;
 }
 
 .cerrar-modal:hover {
   background: rgba(255,255,255,0.4);
   transform: scale(1.1);
+}
+
+.btn-reiniciar {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(76,175,80,0.9);
+  border: none;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.btn-reiniciar.visible {
+  opacity: 1;
+  pointer-events: auto;
+  animation: bounceIn 0.5s ease-out;
+}
+
+.btn-reiniciar:hover {
+  background: rgba(76,175,80,1);
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76,175,80,0.4);
+}
+
+@keyframes bounceIn {
+  0% { transform: translateX(-50%) scale(0.3); opacity: 0; }
+  50% { transform: translateX(-50%) scale(1.05); }
+  70% { transform: translateX(-50%) scale(0.9); }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
 }
 
 /* Galería Instagram */
@@ -427,7 +384,6 @@ body {
     gap: 20px;
   }
   body { padding: 15px; }
-  .controles-video { padding: 15px 15px 10px; }
 }
   </style>
 </head>
@@ -456,25 +412,12 @@ body {
 
 <div class="galeria" id="galeria"></div>
 
-<!-- Modal Timelapse - Estilo YouTube -->
+<!-- Modal Timelapse - SIMPLE -->
 <div class="modal-timelapse" id="modalTimelapse">
   <div class="video-container">
     <button class="cerrar-modal" onclick="cerrarTimelapse()">✕</button>
     <video id="timelapseVideo" muted playsinline></video>
-    <div class="controles-video">
-      <button class="btn-video" id="btnPlayPause" onclick="togglePlayPause()" title="Reproducir/Pausar">
-        ▶️
-      </button>
-      <button class="btn-video reiniciar" id="btnReiniciar" onclick="reiniciarTimelapse()" title="Reiniciar">↻</button>
-      <div id="progresoVideo" onclick="setVideoProgress(event)">
-        <div id="barraProgreso"></div>
-      </div>
-      <span class="tiempo-video" id="tiempoActual">0:00</span>
-      <span class="tiempo-video" id="tiempoTotal">--:--</span>
-      <button class="btn-video" onclick="cambiarVelocidad(0.5)" title="0.5x">0.5x</button>
-      <button class="btn-video" onclick="cambiarVelocidad(1)" title="1x">1x</button>
-      <button class="btn-video" onclick="cambiarVelocidad(2)" title="2x">2x</button>
-    </div>
+    <button class="btn-reiniciar" id="btnReiniciar" onclick="reiniciarTimelapse()" title="Reiniciar">🔄 Reiniciar</button>
   </div>
 </div>
 
@@ -483,8 +426,6 @@ let modoFiltro = false;
 let intervalo = null;
 let imagenesActuales = [];
 let reproduciendo = false;
-let velocidad = 1;
-let duracionTimelapse = 0;
 let frameActual = 0;
 let totalFrames = 0;
 let intervaloFrames = null;
@@ -495,12 +436,6 @@ let timelapseFinalizado = false;
 
 function volver() {
   window.location.href = "/dashboard.html";
-}
-
-function formatearTiempo(segundos) {
-  const mins = Math.floor(segundos / 60);
-  const secs = Math.floor(segundos % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 async function cargarImagenes() {
@@ -541,28 +476,16 @@ async function verTodas() {
   iniciarAutoRefresh();
 }
 
-function reiniciarControles() {
+function reiniciarTimelapse() {
   frameActual = 0;
   timelapseFinalizado = false;
-  document.getElementById('barraProgreso').style.width = '0%';
-  document.getElementById('tiempoActual').textContent = '0:00';
-  document.getElementById('btnPlayPause').textContent = '▶️';
-  document.getElementById('btnReiniciar').style.opacity = '0.5';
-}
-
-function reiniciarTimelapse() {
-  if (timelapseFinalizado || frameActual === 0) return;
+  document.getElementById('btnReiniciar').classList.remove('visible');
   
-  reiniciarControles();
-  
-  // Recrear el stream para resetear posición
   if (stream) {
     stream.getTracks().forEach(track => track.stop());
   }
   
-  if (canvas && ctx) {
-    crearStreamVideo();
-  }
+  crearStreamVideo();
 }
 
 function crearStreamVideo() {
@@ -588,19 +511,13 @@ async function crearTimelapse() {
     canvas.width = 1280;
     canvas.height = 720;
     
-    // Calcular duración total
     totalFrames = imagenesActuales.length;
-    duracionTimelapse = totalFrames * 0.1; // 100ms por frame base
     
     crearStreamVideo();
     
-    // Resetear controles
-    reiniciarControles();
-    document.getElementById('tiempoTotal').textContent = formatearTiempo(duracionTimelapse);
-    
-    // Generar frames UNA SOLA VEZ (sin loop)
+    // Generar frames
     intervaloFrames = setInterval(() => {
-      if (frameActual < totalFrames && reproduciendo && !timelapseFinalizado) {
+      if (frameActual < totalFrames && !timelapseFinalizado) {
         const imgData = imagenesActuales[frameActual];
         const img = new Image();
         img.crossOrigin = 'anonymous';
@@ -609,18 +526,11 @@ async function crearTimelapse() {
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
           frameActual++;
-          const progreso = (frameActual / totalFrames) * 100;
-          document.getElementById('barraProgreso').style.width = `${progreso}%`;
-          
-          const tiempoActual = (frameActual / totalFrames) * duracionTimelapse;
-          document.getElementById('tiempoActual').textContent = formatearTiempo(tiempoActual);
           
           // FINALIZAR cuando llega al final
           if (frameActual >= totalFrames) {
             timelapseFinalizado = true;
-            reproduciendo = false;
-            document.getElementById('btnPlayPause').textContent = '▶️';
-            document.getElementById('btnReiniciar').style.opacity = '1';
+            document.getElementById('btnReiniciar').classList.add('visible');
           }
         };
         img.onerror = () => {
@@ -633,7 +543,6 @@ async function crearTimelapse() {
     video.onloadedmetadata = () => {
       modal.classList.add('mostrar');
       video.play();
-      document.getElementById('btnReiniciar').style.opacity = '0.5';
     };
   } catch (error) {
     console.error('Error creando timelapse:', error);
@@ -645,53 +554,12 @@ function toggleTimelapse() {
   
   if (!reproduciendo && !timelapseFinalizado) {
     reproduciendo = true;
-    btnTimelapse.textContent = '⏸️ Pausado';
+    btnTimelapse.textContent = '⏸️ Timelapse';
     btnTimelapse.classList.add('pausado');
     crearTimelapse();
   } else {
     cerrarTimelapse();
   }
-}
-
-function togglePlayPause() {
-  const video = document.getElementById('timelapseVideo');
-  const btnPlayPause = document.getElementById('btnPlayPause');
-  
-  if (!timelapseFinalizado) {
-    if (video.paused) {
-      video.play();
-      btnPlayPause.textContent = '⏸️';
-      reproduciendo = true;
-    } else {
-      video.pause();
-      btnPlayPause.textContent = '▶️';
-      reproduciendo = false;
-    }
-  }
-}
-
-function cambiarVelocidad(nuevaVelocidad) {
-  velocidad = nuevaVelocidad;
-  if (reproduciendo && !timelapseFinalizado) {
-    cerrarTimelapse();
-    setTimeout(() => {
-      reproduciendo = true;
-      crearTimelapse();
-    }, 100);
-  }
-}
-
-function setVideoProgress(event) {
-  if (timelapseFinalizado) return;
-  
-  const progreso = document.getElementById('progresoVideo');
-  const rect = progreso.getBoundingClientRect();
-  const pos = (event.clientX - rect.left) / rect.width;
-  
-  frameActual = Math.floor(pos * totalFrames);
-  const tiempo = pos * duracionTimelapse;
-  document.getElementById('tiempoActual').textContent = formatearTiempo(tiempo);
-  document.getElementById('barraProgreso').style.width = `${pos * 100}%`;
 }
 
 function cerrarTimelapse() {
@@ -725,11 +593,7 @@ function cerrarTimelapse() {
   }
   
   modal.classList.remove('mostrar');
-  
-  // Resetear controles
-  document.getElementById('barraProgreso').style.width = '0%';
-  document.getElementById('tiempoActual').textContent = '0:00';
-  document.getElementById('tiempoTotal').textContent = '--:--';
+  document.getElementById('btnReiniciar').classList.remove('visible');
 }
 
 async function filtrar() {
