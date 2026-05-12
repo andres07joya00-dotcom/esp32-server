@@ -14,7 +14,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Header fijo */
 .header {
   position: sticky;
   top: 0;
@@ -122,16 +121,7 @@ body {
   box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
 }
 
-.btn-timelapse.pausado {
-  background: linear-gradient(135deg, #666, #888);
-  animation: none;
-}
-
-.btn-timelapse.pausado:hover {
-  box-shadow: 0 8px 25px rgba(102, 102, 102, 0.4);
-}
-
-/* Modal Timelapse - SIMPLE */
+/* Modal Timelapse */
 .modal-timelapse {
   display: none;
   position: fixed;
@@ -144,6 +134,7 @@ body {
   justify-content: center;
   align-items: center;
   padding: 20px;
+  box-sizing: border-box;
 }
 
 .modal-timelapse.mostrar {
@@ -154,24 +145,26 @@ body {
   position: relative;
   width: 100%;
   max-width: 1200px;
-  max-height: 90vh;
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-#timelapseVideo {
+/* EL CANVAS ES EL REPRODUCTOR */
+#timelapseCanvas {
   width: 100%;
-  height: 100%;
+  max-width: 1200px;
+  max-height: 80vh;
   object-fit: contain;
+  border-radius: 12px;
   background: #000;
+  display: block;
 }
 
 .cerrar-modal {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: -50px;
+  right: 0px;
   background: rgba(255,255,255,0.2);
   border: none;
   color: white;
@@ -193,46 +186,111 @@ body {
   transform: scale(1.1);
 }
 
-.btn-reiniciar {
+/* Barra de progreso + controles */
+.controles-timelapse {
   position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(76,175,80,0.9);
+  bottom: -70px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.barra-progreso {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #F7931E);
+  border-radius: 3px;
+  transition: width 0.05s linear;
+  width: 0%;
+}
+
+.botones-control {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-control {
+  background: rgba(255,255,255,0.15);
   border: none;
   color: white;
-  padding: 14px 24px;
-  border-radius: 25px;
-  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
   backdrop-filter: blur(10px);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 10;
 }
 
-.btn-reiniciar.visible {
-  opacity: 1;
-  pointer-events: auto;
-  animation: bounceIn 0.5s ease-out;
+.btn-control:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.05);
 }
 
-.btn-reiniciar:hover {
-  background: rgba(76,175,80,1);
-  transform: translateX(-50%) translateY(-2px);
-  box-shadow: 0 8px 25px rgba(76,175,80,0.4);
+.btn-control.verde {
+  background: rgba(76,175,80,0.8);
 }
 
-@keyframes bounceIn {
-  0% { transform: translateX(-50%) scale(0.3); opacity: 0; }
-  50% { transform: translateX(-50%) scale(1.05); }
-  70% { transform: translateX(-50%) scale(0.9); }
-  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+.contador-frames {
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  font-weight: 500;
 }
 
-/* Galería Instagram */
+/* Overlay de carga dentro del modal */
+.cargando-overlay {
+  display: none;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  border-radius: 12px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+  color: white;
+  z-index: 20;
+}
+
+.cargando-overlay.visible {
+  display: flex;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255,255,255,0.2);
+  border-top-color: #4CAF50;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.cargando-texto {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cargando-progreso {
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Galería */
 .galeria {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -253,6 +311,7 @@ body {
   cursor: pointer;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.3);
+  animation: fadeInUp 0.6s ease-out forwards;
 }
 
 .img-card:hover {
@@ -304,7 +363,6 @@ body {
   transition: opacity 0.3s;
   color: white;
   font-weight: bold;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .img-card:hover .overlay {
@@ -314,10 +372,8 @@ body {
 .icono-camara {
   font-size: 48px;
   margin-bottom: 10px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
-/* Botón volver fijo */
 .volver {
   position: fixed;
   top: 25px;
@@ -341,48 +397,27 @@ body {
   box-shadow: 0 12px 35px rgba(0,0,0,0.3);
 }
 
-/* Animaciones */
 @keyframes pulsoNaranja {
   0%, 100% { box-shadow: 0 0 20px rgba(255,107,53,0.5); }
   50% { box-shadow: 0 0 30px rgba(255,107,53,0.8); }
 }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.img-card {
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.img-card:nth-child(1) { animation-delay: 0.1s; }
-.img-card:nth-child(2) { animation-delay: 0.2s; }
-.img-card:nth-child(3) { animation-delay: 0.3s; }
-
-/* Responsive */
 @media (max-width: 768px) {
-  .galeria {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
-  }
+  .galeria { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; }
   .titulo { font-size: 28px; }
   .controles { flex-direction: column; gap: 15px; }
-  .filtros { width: 100%; justify-content: center; }
-  .video-container { max-width: 95vw; }
+  .filtros { width: 100%; justify-content: center; flex-wrap: wrap; }
+  #timelapseCanvas { max-height: 60vw; }
+  .controles-timelapse { bottom: -90px; }
 }
 
 @media (max-width: 480px) {
-  .galeria {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
+  .galeria { grid-template-columns: 1fr; gap: 20px; }
   body { padding: 15px; }
 }
   </style>
@@ -393,46 +428,66 @@ body {
 
 <div class="header">
   <h1 class="titulo">📸 Feed del Invernadero</h1>
-  
   <div class="controles">
     <div class="filtros">
       <input type="date" id="fechaInput">
-      <button class="btn-filtrar" onclick="filtrar()">
-        🔍 Filtrar
-      </button>
-      <button class="btn-limpiar" onclick="verTodas()">
-         📷 Ver todas
-      </button>
-      <button class="btn-timelapse" id="btnTimelapse">
-        ▶️ Timelapse
-      </button>
+      <button class="btn-filtrar" onclick="filtrar()">🔍 Filtrar</button>
+      <button class="btn-limpiar" onclick="verTodas()">📷 Ver todas</button>
+      <button class="btn-timelapse" id="btnTimelapse" onclick="abrirTimelapse()">▶️ Timelapse</button>
     </div>
   </div>
 </div>
 
 <div class="galeria" id="galeria"></div>
 
-<!-- Modal Timelapse - SIMPLE -->
+<!-- Modal Timelapse -->
 <div class="modal-timelapse" id="modalTimelapse">
   <div class="video-container">
+
+    <!-- Botón cerrar -->
     <button class="cerrar-modal" onclick="cerrarTimelapse()">✕</button>
-    <video id="timelapseVideo" muted playsinline></video>
-    <button class="btn-reiniciar" id="btnReiniciar" onclick="reiniciarTimelapse()" title="Reiniciar">🔄 Reiniciar</button>
+
+    <!-- Canvas = pantalla del timelapse -->
+    <canvas id="timelapseCanvas"></canvas>
+
+    <!-- Overlay de carga -->
+    <div class="cargando-overlay" id="cargandoOverlay">
+      <div class="spinner"></div>
+      <div class="cargando-texto">⚡ Cargando imágenes...</div>
+      <div class="cargando-progreso" id="cargandoProgreso">0 / 0</div>
+    </div>
+
+    <!-- Controles debajo del canvas -->
+    <div class="controles-timelapse">
+      <div class="barra-progreso">
+        <div class="progreso-fill" id="progresoFill"></div>
+      </div>
+      <div class="botones-control">
+        <button class="btn-control" id="btnPausaPlay" onclick="togglePausa()">⏸ Pausar</button>
+        <button class="btn-control verde" onclick="reiniciarTimelapse()">🔄 Reiniciar</button>
+        <span class="contador-frames" id="contadorFrames">0 / 0</span>
+      </div>
+    </div>
+
   </div>
 </div>
 
 <script>
-let modoFiltro = false;
-let intervalo = null;
+  
+let modoFiltro    = false;
+let intervalo     = null;
 let imagenesActuales = [];
+
+// Timelapse
+let frames        = [];   // HTMLImageElement[]
+let frameActual   = 0;
 let reproduciendo = false;
-let frameActual = 0;
-let totalFrames = 0;
-let intervaloFrames = null;
-let canvas = null;
-let ctx = null;
-let stream = null;
-let timelapseFinalizado = false;
+let pausado       = false;
+let animationId   = null;
+let ultimoTiempo  = 0;
+
+const FPS         = 10;           // frames por segundo (ajustable)
+const FRAME_DELAY = 1000 / FPS;
 
 function volver() {
   window.location.href = "/dashboard.html";
@@ -441,251 +496,283 @@ function volver() {
 async function cargarImagenes() {
   try {
     const res = await fetch("/imagenes");
-    if (!res.ok) throw new Error('Error en respuesta');
+    if (!res.ok) throw new Error();
     const data = await res.json();
     imagenesActuales = data;
     renderizar(data);
     return data;
-  } catch (error) {
-    console.error('Error cargando imágenes:', error);
-    mostrarErrorTemporal('🔌 Conectando con cámara...');
+  } catch {
+    mostrarMensaje("🔌 Conectando con cámara...");
     return [];
   }
 }
 
-function mostrarErrorTemporal(mensaje) {
-  const galeria = document.getElementById('galeria');
-  galeria.innerHTML = `<div style="grid-column: 1 / -1; text-align:center;padding:60px;color:#666;font-size:18px;">${mensaje}</div>`;
+function mostrarMensaje(msg) {
+  document.getElementById("galeria").innerHTML = `
+    <div style="grid-column:1/-1;text-align:center;padding:60px;color:#666;font-size:18px;">
+      ${msg}
+    </div>`;
 }
 
 async function verTodas() {
   modoFiltro = false;
   document.getElementById("fechaInput").value = "";
-  
-  mostrarErrorTemporal('📱 Cargando todas las imágenes...');
-  
-  try {
-    const data = await cargarImagenes();
-    if (data.length === 0) {
-      mostrarErrorTemporal('📷 No hay imágenes disponibles');
-    }
-  } catch (error) {
-    console.error('Error en verTodas:', error);
-  }
-  
+  mostrarMensaje("📱 Cargando imágenes...");
+  const data = await cargarImagenes();
+  if (data.length === 0) mostrarMensaje("📷 No hay imágenes");
   iniciarAutoRefresh();
-}
-
-function reiniciarTimelapse() {
-  frameActual = 0;
-  timelapseFinalizado = false;
-  document.getElementById('btnReiniciar').classList.remove('visible');
-  
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-  }
-  
-  crearStreamVideo();
-}
-
-function crearStreamVideo() {
-  const video = document.getElementById('timelapseVideo');
-  const fps = 30;
-  stream = canvas.captureStream(fps);
-  video.srcObject = stream;
-}
-
-async function crearTimelapse() {
-  try {
-    const modal = document.getElementById('modalTimelapse');
-    const video = document.getElementById('timelapseVideo');
-    
-    if (imagenesActuales.length === 0) {
-      alert('No hay imágenes para el timelapse');
-      return;
-    }
-    
-    // Crear canvas
-    canvas = document.createElement('canvas');
-    ctx = canvas.getContext('2d');
-    canvas.width = 1280;
-    canvas.height = 720;
-    
-    totalFrames = imagenesActuales.length;
-    
-    crearStreamVideo();
-    
-    // Generar frames
-    intervaloFrames = setInterval(() => {
-      if (frameActual < totalFrames && !timelapseFinalizado) {
-        const imgData = imagenesActuales[frameActual];
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
-          frameActual++;
-          
-          // FINALIZAR cuando llega al final
-          if (frameActual >= totalFrames) {
-            timelapseFinalizado = true;
-            document.getElementById('btnReiniciar').classList.add('visible');
-          }
-        };
-        img.onerror = () => {
-          frameActual++; // Saltar frame fallido
-        };
-        img.src = imgData.url;
-      }
-    }, 100);
-
-    video.onloadedmetadata = () => {
-      modal.classList.add('mostrar');
-      video.play();
-    };
-  } catch (error) {
-    console.error('Error creando timelapse:', error);
-  }
-}
-
-function toggleTimelapse() {
-  const btnTimelapse = document.getElementById('btnTimelapse');
-  
-  if (!reproduciendo && !timelapseFinalizado) {
-    reproduciendo = true;
-    btnTimelapse.textContent = '⏸️ Timelapse';
-    btnTimelapse.classList.add('pausado');
-    crearTimelapse();
-  } else {
-    cerrarTimelapse();
-  }
-}
-
-function cerrarTimelapse() {
-  const modal = document.getElementById('modalTimelapse');
-  const video = document.getElementById('timelapseVideo');
-  const btnTimelapse = document.getElementById('btnTimelapse');
-  
-  reproduciendo = false;
-  timelapseFinalizado = false;
-  
-  btnTimelapse.textContent = '▶️ Timelapse';
-  btnTimelapse.classList.remove('pausado');
-  
-  if (intervaloFrames) {
-    clearInterval(intervaloFrames);
-    intervaloFrames = null;
-  }
-  
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
-  
-  if (video.srcObject) {
-    video.srcObject = null;
-  }
-  
-  if (canvas) {
-    canvas = null;
-    ctx = null;
-  }
-  
-  modal.classList.remove('mostrar');
-  document.getElementById('btnReiniciar').classList.remove('visible');
 }
 
 async function filtrar() {
   const fecha = document.getElementById("fechaInput").value;
-  
-  if (!fecha) {
-    verTodas();
-    return;
-  }
-
+  if (!fecha) { verTodas(); return; }
   modoFiltro = true;
   clearInterval(intervalo);
-  
-  mostrarErrorTemporal('🔍 Filtrando imágenes...');
-  
+  mostrarMensaje("🔍 Filtrando...");
   try {
     const res = await fetch(`/imagenes/${fecha}`);
-    if (!res.ok) throw new Error('No hay imágenes');
+    if (!res.ok) throw new Error();
     const data = await res.json();
     imagenesActuales = data;
     renderizar(data);
-  } catch (error) {
-    console.error('Error filtro:', error);
-    mostrarErrorTemporal('❌ No hay imágenes para esta fecha');
+  } catch {
+    mostrarMensaje("❌ No hay imágenes para esa fecha");
   }
 }
 
 function renderizar(lista) {
   const galeria = document.getElementById("galeria");
-  
   if (lista.length === 0) {
     galeria.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align:center; padding:80px; color:#666; font-size:18px;">
-        📷 No hay imágenes disponibles
-        <br><small>Intenta otra fecha o espera nuevas capturas</small>
-      </div>
-    `;
+      <div style="grid-column:1/-1;text-align:center;padding:80px;color:#666;">
+        📷 No hay imágenes
+      </div>`;
     return;
   }
-
   galeria.innerHTML = "";
-  
-  lista.slice().reverse().forEach((img, index) => {
-    const div = document.createElement("div");
+  lista.slice().reverse().forEach(img => {
+    const div  = document.createElement("div");
     div.className = "img-card";
-    div.style.animationDelay = `${index * 0.05}s`;
-    
     const fecha = new Date(img.created_at);
-    const fechaFormato = fecha.toLocaleDateString('es-ES');
-    const horaFormato = fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
-    
     div.innerHTML = `
-      <img src="${img.url}" alt="Invernadero ${horaFormato}" loading="lazy" />
-      <div class="overlay">
-        <div class="icono-camara">📷</div>
-        <div style="font-size:18px; margin-bottom:8px;">Ver imagen</div>
-        <div style="font-size:14px; opacity:0.9;">${horaFormato}</div>
-      </div>
+      <img src="${img.url}" loading="lazy">
+      <div class="overlay"><div class="icono-camara">📷</div></div>
       <div class="info">
-        <div class="fecha">${fechaFormato}</div>
-        <div class="hora">${horaFormato}</div>
-      </div>
-    `;
-    
-    div.onclick = () => {
-      window.open(img.url, '_blank');
-    };
-    
+        <div class="fecha">${fecha.toLocaleDateString('es-ES')}</div>
+        <div class="hora">${fecha.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`;
+    div.onclick = () => window.open(img.url, "_blank");
     galeria.appendChild(div);
   });
 }
 
 function iniciarAutoRefresh() {
   clearInterval(intervalo);
-  intervalo = setInterval(async () => {
-    if (!modoFiltro) {
-      await cargarImagenes();
-    }
+  intervalo = setInterval(() => {
+    if (!modoFiltro) cargarImagenes();
   }, 60000);
 }
 
-// Event listeners
-document.getElementById('btnTimelapse').addEventListener('click', toggleTimelapse);
+// 1. Abrir modal y empezar carga
+async function abrirTimelapse() {
 
-// Inicializar
-document.addEventListener('DOMContentLoaded', () => {
-  const hoy = new Date().toISOString().split('T')[0];
-  document.getElementById('fechaInput').value = hoy;
-  
+  if (imagenesActuales.length === 0) {
+    alert("No hay imágenes para el timelapse");
+    return;
+  }
+
+  // Mostrar modal con pantalla de carga
+  document.getElementById("modalTimelapse").classList.add("mostrar");
+  document.getElementById("cargandoOverlay").classList.add("visible");
+  document.getElementById("cargandoProgreso").textContent = "0 / 0";
+  document.getElementById("btnPausaPlay").textContent = "⏸ Pausar";
+
+  // Preparar canvas
+  const canvas = document.getElementById("timelapseCanvas");
+  const ctx    = canvas.getContext("2d");
+
+  // Reducir frames si hay muchos (máx 400)
+  let lista = imagenesActuales;
+  if (lista.length > 400) {
+    const salto = Math.ceil(lista.length / 400);
+    lista = lista.filter((_, i) => i % salto === 0);
+  }
+
+  // Precargar imágenes con progreso
+  frames = await precargarConProgreso(lista);
+
+  if (frames.length === 0) {
+    alert("No se pudieron cargar las imágenes");
+    cerrarTimelapse();
+    return;
+  }
+
+  // Ajustar tamaño del canvas a la primera imagen
+  canvas.width  = frames[0].naturalWidth  || 960;
+  canvas.height = frames[0].naturalHeight || 540;
+
+  // Ocultar overlay de carga y arrancar
+  document.getElementById("cargandoOverlay").classList.remove("visible");
+
+  frameActual   = 0;
+  reproduciendo = true;
+  pausado       = false;
+  ultimoTiempo  = performance.now();
+
+  // Dibujar primer frame inmediatamente
+  dibujarFrame(ctx, canvas, 0);
+  actualizarUI();
+
+  // Arrancar el loop
+  animationId = requestAnimationFrame(
+    (t) => loopTimelapse(t, ctx, canvas)
+  );
+}
+
+// 2. Precarga con progreso visual
+function precargarConProgreso(lista) {
+  return new Promise(resolve => {
+    const total    = lista.length;
+    let cargadas   = 0;
+    const imagenes = [];
+
+    function actualizar() {
+      cargadas++;
+      document.getElementById("cargandoProgreso")
+        .textContent = `${cargadas} / ${total}`;
+      if (cargadas === total) {
+        resolve(imagenes.filter(Boolean));
+      }
+    }
+
+    lista.forEach((imgData, i) => {
+      const img    = new Image();
+      img.crossOrigin = "anonymous";   // evita errores CORS en canvas
+      img.onload  = () => { imagenes[i] = img; actualizar(); };
+      img.onerror = () => { imagenes[i] = null; actualizar(); };
+      img.src     = imgData.url;
+    });
+  });
+}
+
+// 3. Loop de animación con requestAnimationFrame
+function loopTimelapse(tiempo, ctx, canvas) {
+
+  if (!reproduciendo) return;   // parado → no continuar
+
+  if (!pausado) {
+    const delta = tiempo - ultimoTiempo;
+
+    if (delta >= FRAME_DELAY) {
+      dibujarFrame(ctx, canvas, frameActual);
+      actualizarUI();
+      frameActual++;
+      ultimoTiempo = tiempo;
+
+      // ¿Terminó?
+      if (frameActual >= frames.length) {
+        reproduciendo = false;
+        document.getElementById("btnPausaPlay").textContent = "✅ Terminado";
+        return;  // salir del loop → se muestra el último frame
+      }
+    }
+  }
+
+  // Seguir el loop
+  animationId = requestAnimationFrame(
+    (t) => loopTimelapse(t, ctx, canvas)
+  );
+}
+
+// 4. Dibujar un frame en el canvas
+function dibujarFrame(ctx, canvas, indice) {
+  const img = frames[indice];
+  if (!img) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+}
+
+// 5. Actualizar barra de progreso y contador
+function actualizarUI() {
+  const total    = frames.length;
+  const actual   = frameActual + 1;
+  const pct      = total > 0 ? (actual / total) * 100 : 0;
+
+  document.getElementById("progresoFill").style.width  = pct + "%";
+  document.getElementById("contadorFrames").textContent = `${actual} / ${total}`;
+}
+
+// 6. Pausar / Reanudar
+function togglePausa() {
+  if (!reproduciendo && !pausado) return; // ya terminó
+
+  pausado = !pausado;
+  document.getElementById("btnPausaPlay").textContent =
+    pausado ? "▶️ Reanudar" : "⏸ Pausar";
+
+  // Si reanudamos, relanzar el loop
+  if (!pausado) {
+    reproduciendo = true;
+    ultimoTiempo  = performance.now();
+    const canvas  = document.getElementById("timelapseCanvas");
+    const ctx     = canvas.getContext("2d");
+    animationId   = requestAnimationFrame(
+      (t) => loopTimelapse(t, ctx, canvas)
+    );
+  }
+}
+
+// 7. Reiniciar desde el frame 0
+function reiniciarTimelapse() {
+  cancelAnimationFrame(animationId);
+
+  frameActual   = 0;
+  reproduciendo = true;
+  pausado       = false;
+  ultimoTiempo  = performance.now();
+
+  document.getElementById("btnPausaPlay").textContent = "⏸ Pausar";
+
+  const canvas = document.getElementById("timelapseCanvas");
+  const ctx    = canvas.getContext("2d");
+
+  dibujarFrame(ctx, canvas, 0);
+  actualizarUI();
+
+  animationId = requestAnimationFrame(
+    (t) => loopTimelapse(t, ctx, canvas)
+  );
+}
+
+// 8. Cerrar modal y limpiar todo
+function cerrarTimelapse() {
+  reproduciendo = false;
+  pausado       = false;
+  cancelAnimationFrame(animationId);
+
+  document.getElementById("modalTimelapse").classList.remove("mostrar");
+  document.getElementById("cargandoOverlay").classList.remove("visible");
+
+  // Limpiar canvas
+  const canvas = document.getElementById("timelapseCanvas");
+  const ctx    = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Liberar memoria
+  frames      = [];
+  frameActual = 0;
+
+  document.getElementById("progresoFill").style.width     = "0%";
+  document.getElementById("contadorFrames").textContent   = "0 / 0";
+  document.getElementById("btnPausaPlay").textContent     = "⏸ Pausar";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const hoy = new Date().toISOString().split("T")[0];
+  document.getElementById("fechaInput").value = hoy;
   verTodas();
 });
-</script>
 
+</script>
 </body>
 </html>
